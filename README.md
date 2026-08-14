@@ -1,43 +1,65 @@
-# KelanaAI -  Trip Summary Generator
+# KelanaAI - 
 
-KelanaAI is a Python console application designed to help users plan, estimate costs, and view their travel trip summaries with budget status indicators.
-
----
-
-## Project Structure
+## Struktur Proyek
 
 ```text
-.
+KelanaAI/
 ├── README.md
-├── backend/
-│   └── main.py
-└── frontend/
-    └── .gitkeep
+└── backend/
+    ├── main.py                # Presentation Layer (Input/Output Interaktif)
+    ├── test_main.py           # Script Pengujian Otomatis
+    └── services/
+        └── trip_service.py    # Business Logic Layer (Kategori & Rekomendasi)
 ```
 
 ---
 
-## How to Run
+## Cara Menjalankan
 
-Run the main backend script using Python:
-
+### 1. Mode Interaktif
+Jalankan program utama untuk memasukkan data perjalanan secara interaktif:
 ```bash
 python backend/main.py
 ```
 
+### 2. Mode Testing (Pengujian Otomatis)
+Jalankan pengujian untuk menguji berbagai skenario trip tanpa input manual:
+```bash
+python backend/test_main.py
+```
+
 ---
 
-## Test Cases Examples
+## Contoh Output
 
-Below are example calls for testing different budget statuses in `backend/main.py`:
+```text
+========================
+KelanaAI
+========================
 
-```python
-# Case 1: Under budget 
-print_trip_summary("Tokyo", "Japan", 5, 1000.0, "USD", "October", 300.0, 200.0, 100.0, 50.0, 650.0)
+Destination List: 
+Destination 1 : Indonesia
+Destination 2 : Japan
+Days                 : 7
+Budget               : 2000.0 USD
+Currency             : USD
+Travel Month         : December
+Total Estimated Cost : 2200.0 USD
 
-# Case 2: Over budget
-print_trip_summary("Paris", "France", 3, 500.0, "EUR", "July", 400.0, 150.0, 100.0, 50.0, 700.0)
+Status: Over budget!
+------------------------
 
-# Case 3: On budget
-print_trip_summary("Bali", "Indonesia", 4, 300.0, "USD", "August", 100.0, 100.0, 50.0, 50.0, 300.0)
+Trip Category: Standard
+Travel Season: Peak Season
+Daily Budget: 285.71 USD
+Recommended Transportation: Train
+Recommended Places:
+Indonesia :
+ - Bali
+ - Yogyakarta
+ - Raja Ampat
+Japan :
+ - Tokyo Tower
+ - Shibuya
+ - Mount Fuji
 ```
