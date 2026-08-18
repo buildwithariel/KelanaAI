@@ -1,81 +1,69 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+
 from services.trip_service import (
     get_trip_category,
     get_travel_season,
     get_recommended_places,
     get_recommended_transportation,
-    calculate_daily_budget
+    calculate_daily_budget,
+    get_list_of_category,
+    get_list_of_transportation
 )
 
-def get_user_destination():
-    size = int(input("How many destinations do you want to visit: "))
-    all_destination = []
-    for i in range (size):
-        destination_places = input(f"Destination-{i + 1} : ")
-        all_destination.append(destination_places)
-    return all_destination
+class TripRequest(BaseModel):
+    destination: str
+    days: int
+    budget: float
+    currency: str
+    travel_month: str
+    travel_style: str
 
-def print_user_destinations(destination):
-    print("Destination List: ")
-    for i in range(len(destination)):
-        print(f"Destination {i+1} : {destination[i]}")
+app = FastAPI()
 
-def get_user_inputs():
-    destination          = get_user_destination()
-    days                 = int(input("Enter your days: "))
-    budget               = float(input("Enter your budget: "))
-    currency             = str(input("Enter your currency: "))
-    travel_month         = str(input("Enter your travel month: "))
-    hotel_cost           = float(input("Enter hotel cost: "))
-    food_cost            = float(input("Enter food cost: "))
-    transportation_cost  = float(input("Enter transportation cost: "))
-    miscellaneous_cost   = float(input("Enter miscellaneous cost: "))
-    total_cost = hotel_cost + food_cost + transportation_cost + miscellaneous_cost
-    return destination, days, budget, currency, travel_month, hotel_cost, food_cost, transportation_cost, miscellaneous_cost, total_cost
+@app.get("/")
+def home():
+    return {
+        "messages": "Welcome to KelanaAI"
+    }
 
-#Function to print the trip summary
-def print_trip_summary(destination, days, budget, currency, travel_month, hotel_cost, food_cost, transportation_cost, miscellaneous_cost, total_cost):
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok"
+    }
 
-    print("========================")
-    print("KelanaAI")
-    print("========================\n")
+@app.post("/api/v1/trips")
+def create_trips(request: TripRequest):
+    daily_budget = calculate_daily_budget(request.budget, request.days)
+    trip_category = get_trip_category(request.budget)
+    travel_season = get_travel_season(request.travel_month)
+    reccomendation_transport = get_recommended_transportation(trip_category)
 
-    print_user_destinations(destination)
-    print(f"Days                 : {days}")
-    print(f"Budget               : {budget} {currency}")
-    print(f"Currency             : {currency}")
-    print(f"Travel Month         : {travel_month}")
-    print(f"Total Estimated Cost : {total_cost} {currency}")
-    
-    if total_cost > budget:
-        print("Status: Over budget!")
-    elif total_cost < budget:
-        print("Status: Under budget!")
-    else:
-        print("Status: On budget!")
-    
-    print("------------------------\n")
+    return {
+        "destination": request.destination,
+        "days": request.days,
+        "budget": request.budget,
+        "category": trip_category,
+        "travel_month": request.travel_month,
+        "daily_budget": daily_budget,
+        "travel_season": travel_season,
+        "reccomendation_transport": reccomendation_transport
+    }
 
-# Function that prints the trip service
-def print_trip_service(budget, travel_month, days, currency, destination):
-    category = get_trip_category(budget)
-    season = get_travel_season(travel_month)
-    daily_budget = calculate_daily_budget(budget, days)
-    recommended_transportation = get_recommended_transportation(category)
+@app.get("/api/v1/recommendations")
+def get_recommendations(destination: str):
+    recommendation_places = get_recommended_places(destination)
+    return recommendation_places
 
-    print(f"Trip Category: {category}")
-    print(f"Travel Season: {season}")
-    print(f"Daily Budget: {daily_budget:.2f} {currency}")
-    print(f"Recommended Transportation: {recommended_transportation}")
-    print("Recommended Places:")
-    for dest in destination:
-        print(f"{dest} :")
-        places = get_recommended_places(dest)
-        for place in places:
-            print(f" - {place}")
+@app.get("/api/v1/transportations")
+def get_all_transportations():
+    transportations = get_list_of_transportation()
+    return transportations
 
-def main():
-    destination, days, budget, currency, travel_month, hotel_cost, food_cost, transportation_cost, miscellaneous_cost, total_cost = get_user_inputs()
-    print_trip_summary(destination, days, budget, currency, travel_month, hotel_cost, food_cost, transportation_cost, miscellaneous_cost, total_cost)
-    print_trip_service(budget, travel_month, days, currency, destination)
-
-main()
+@app.get("/api/v1/trip-categories")
+def get_all_trip_categories():
+    trip_categories = get_list_of_category()
+    return {
+        "trip_categories": trip_categories
+    }
