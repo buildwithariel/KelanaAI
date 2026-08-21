@@ -1,5 +1,17 @@
+# Virtual environment
 backend/.venv
+.venv/
+
+# Environment variables (JANGAN pernah di-commit!)
+backend/.env
+.env
 
 # Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# OS files
+.DS_Store
+Thumbs.db

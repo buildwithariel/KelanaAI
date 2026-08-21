@@ -36,7 +36,7 @@ def get_travel_season(month: str) -> str:
 def calculate_daily_budget(budget: float, days: int) -> float:
     if days <= 0:
         return 0.0
-    return budget / days
+    return round(budget / days, 3)
 
 def get_recommended_transportation(category: str) -> str:
     formatted_category = category.strip().lower()
