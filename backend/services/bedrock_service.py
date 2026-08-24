@@ -1,14 +1,16 @@
-import os
+from dotenv import load_dotenv
 import boto3
+import os
 
-MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "anthropic.claude-3-haiku-20240307-v1:0")
-_client = None
+# Load environment variables from .env
+load_dotenv()
 
-def _get_client():
-    global _client
-    if _client is None:
-        _client = boto3.client("bedrock-runtime", region_name=os.getenv("AWS_REGION", "us-east-1"))
-    return _client
+# Create the Bedrock Runtime client
+# boto3 automatically authenticates using AWS_BEARER_TOKEN_BEDROCK
+client = boto3.client(
+    service_name="bedrock-runtime",
+    region_name=os.getenv("AWS_REGION")
+)
 
 def build_prompt(trip) -> str:
     return (
@@ -31,11 +33,21 @@ def build_prompt(trip) -> str:
     )
 
 def generate_itinerary(trip) -> str:
-    response = _get_client().converse(
-        modelId=MODEL_ID,
-        messages=[{"role": "user", "content": [{"text": build_prompt(trip)}]}],
-        inferenceConfig={"maxTokens": 2000, "temperature": 0.7},
+    # Send the prompt using the Converse API
+    response = client.converse(
+        modelId=os.getenv("MODEL_ID"),
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "text": build_prompt(trip)
+                    }
+                ]
+            }
+        ]
     )
+    # Extract the AI response
     return response["output"]["message"]["content"][0]["text"]
 
 if __name__ == "__main__":
