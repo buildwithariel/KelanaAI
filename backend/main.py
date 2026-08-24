@@ -12,6 +12,7 @@ from services.trip_service import (
     get_list_of_category,
     get_list_of_transportation
 )
+from services.bedrock_service import generate_itinerary
 
 class TripRequest(BaseModel):
     destination: str
@@ -96,6 +97,20 @@ def update_trip_budget(trip_id: int, request: BudgetUpdateRequest):
         trip.budget       = request.budget
         trip.category     = get_trip_category(request.budget)
         trip.daily_budget = calculate_daily_budget(request.budget, trip.days)
+        db.commit()
+        db.refresh(trip)
+        return trip
+    finally:
+        db.close()
+
+@app.post("/api/v1/trips/{trip_id}/generate")
+def generate_trip_recommendation(trip_id: int):
+    db = SessionLocal()
+    try:
+        trip = db.query(Trip).filter(Trip.id == trip_id).first()
+        if trip is None:
+            raise HTTPException(status_code=404, detail=f"Trip with id {trip_id} not found")
+        trip.ai_recommendation = generate_itinerary(trip)
         db.commit()
         db.refresh(trip)
         return trip
