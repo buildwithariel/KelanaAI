@@ -12,7 +12,7 @@ from services.trip_service import (
     get_list_of_category,
     get_list_of_transportation
 )
-from services.bedrock_service import generate_itinerary
+from services.bedrock_service import get_ai_recommendation
 
 class TripRequest(BaseModel):
     destination: str
@@ -48,12 +48,12 @@ def create_trips(request: TripRequest):
     reccomendation_transport = get_recommended_transportation(trip_category)
 
     trip = Trip(
-        destination=request.destination,
-        days=request.days,
-        budget=request.budget,
-        category=trip_category,
-        daily_budget=daily_budget,
-        travel_season=travel_season,
+        destination             =request.destination,
+        days                    =request.days,
+        budget                  =request.budget,
+        category                =trip_category,
+        daily_budget            =daily_budget,
+        travel_season           =travel_season,
         reccomendation_transport=reccomendation_transport
     )
 
@@ -110,7 +110,12 @@ def generate_trip_recommendation(trip_id: int):
         trip = db.query(Trip).filter(Trip.id == trip_id).first()
         if trip is None:
             raise HTTPException(status_code=404, detail=f"Trip with id {trip_id} not found")
-        trip.ai_recommendation = generate_itinerary(trip)
+        trip.ai_recommendation = get_ai_recommendation(
+            destination=trip.destination,
+            days=trip.days,
+            budget=trip.budget,
+            travel_style=trip.category,
+        )
         db.commit()
         db.refresh(trip)
         return trip
