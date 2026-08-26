@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from models.trip import Trip
 from database import SessionLocal, init_db
@@ -26,6 +27,16 @@ class BudgetUpdateRequest(BaseModel):
     budget: float
 
 app = FastAPI()
+
+# The Next.js frontend runs on its own origin, so the browser needs permission
+# to call this API from there.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 init_db()
 
 @app.get("/")

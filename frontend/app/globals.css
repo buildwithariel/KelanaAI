@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  /* Night flight: departure-board amber on passport navy, ticket stock white. */
+  --color-night: #0a1a30;
+  --color-deep: #050d19;
+  --color-panel: #10253f;
+  --color-line: #1e3a5c;
+  --color-signal: #ffb020;
+  --color-paper: #fffcf5;
+  --color-ink: #0a1a30;
+  --color-mist: #8fa6c4;
+
+  --font-display: var(--font-archivo), "Arial Narrow", sans-serif;
+  --font-board: var(--font-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-night);
+  color: var(--color-paper);
+}
+
+/* Boarding-pass perforation: dashed rule with a notch punched out of each edge.
+   The notches are filled with the page colour the card sits on. */
+.tear {
+  position: relative;
+  border-top: 2px dashed color-mix(in srgb, var(--color-ink) 20%, transparent);
+}
+.tear::before,
+.tear::after {
+  content: "";
+  position: absolute;
+  top: -13px;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--color-night);
+}
+.tear::before {
+  left: -13px;
+}
+.tear::after {
+  right: -13px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
