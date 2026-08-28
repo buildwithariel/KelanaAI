@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, type ReactNode } from "react";
+import Nav from "../components/Nav";
 import { API_BASE } from "./lib/api";
 import { parseItinerary } from "./lib/itinerary";
 import type { Trip } from "./lib/types";
@@ -75,6 +75,8 @@ export default function Home() {
 
   return (
     <main className="flex-1">
+      <Nav />
+
       {/* ---------------------------------------------------------------- hero */}
       <section className="relative isolate flex min-h-[80svh] items-end overflow-hidden">
         <Image
@@ -87,20 +89,6 @@ export default function Home() {
           className="object-cover"
         />
         <div className="absolute inset-0 bg-linear-to-t from-night via-night/90 to-night/30" />
-
-        <header className="absolute inset-x-0 top-0 z-10">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-6">
-            <p className="font-display text-lg font-extrabold tracking-tight">
-              Kelana<span className="text-signal">AI</span>
-            </p>
-            <Link
-              href="/trips"
-              className="font-board text-[10px] font-semibold uppercase tracking-[0.24em] text-mist transition hover:text-signal"
-            >
-              Trip history
-            </Link>
-          </div>
-        </header>
 
         <div className="relative mx-auto w-full max-w-6xl px-6 pb-36 pt-28">
           <p className="font-board text-[10px] font-semibold uppercase tracking-[0.28em] text-signal">

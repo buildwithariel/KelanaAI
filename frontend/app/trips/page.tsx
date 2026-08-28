@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Nav from "../../components/Nav";
 import TripCard from "../../components/TripCard";
 import { API_BASE } from "../lib/api";
 import type { Trip } from "../lib/types";
@@ -37,21 +38,9 @@ export default function TripHistory() {
 
   return (
     <main className="flex-1">
-      <header className="border-b border-line px-6 py-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link href="/" className="font-display text-lg font-extrabold tracking-tight">
-            Kelana<span className="text-signal">AI</span>
-          </Link>
-          <Link
-            href="/#plan"
-            className="font-board text-[11px] font-semibold uppercase tracking-[0.16em] text-paper/75 transition hover:text-signal"
-          >
-            Plan a trip
-          </Link>
-        </div>
-      </header>
+      <Nav />
 
-      <section className="mx-auto max-w-6xl px-6 py-16">
+      <section className="mx-auto max-w-6xl px-6 pb-16 pt-28">
         <p className="font-board text-[10px] font-semibold uppercase tracking-[0.28em] text-signal">
           Trip history
         </p>
