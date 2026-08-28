@@ -9,10 +9,13 @@ import type { Trip } from "../lib/types";
 
 type Phase = "loading" | "done" | "error";
 
+const PAGE_SIZE = 10;
+
 export default function TripHistory() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [phase, setPhase] = useState<Phase>("loading");
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +38,10 @@ export default function TripHistory() {
       cancelled = true;
     };
   }, []);
+
+  const pageCount = Math.max(1, Math.ceil(trips.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageTrips = trips.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <main className="flex-1">
@@ -81,11 +88,37 @@ export default function TripHistory() {
         )}
 
         {phase === "done" && trips.length > 0 && (
-          <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {trips.map((trip) => (
-              <TripCard key={trip.id} trip={trip} />
-            ))}
-          </div>
+          <>
+            <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-2">
+              {pageTrips.map((trip) => (
+                <TripCard key={trip.id} trip={trip} />
+              ))}
+            </div>
+
+            {trips.length > PAGE_SIZE && (
+              <div className="mt-10 flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  disabled={currentPage === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="rounded-full border border-line px-4 py-2 font-board text-xs font-semibold uppercase tracking-[0.14em] text-paper/80 transition hover:border-signal/40 hover:text-signal disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  Prev
+                </button>
+                <p className="font-board text-xs uppercase tracking-[0.14em] text-mist">
+                  Page {currentPage} of {pageCount}
+                </p>
+                <button
+                  type="button"
+                  disabled={currentPage === pageCount}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="rounded-full border border-line px-4 py-2 font-board text-xs font-semibold uppercase tracking-[0.14em] text-paper/80 transition hover:border-signal/40 hover:text-signal disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </main>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Trip } from "../app/lib/types";
 
 // Same destination keys the homepage hero uses, so a trip card and the
@@ -26,7 +27,10 @@ export default function TripCard({ trip }: { trip: Trip }) {
     "border-line bg-panel text-mist";
 
   return (
-    <article className="overflow-hidden rounded-xl border border-line bg-panel/50">
+    <Link
+      href={`/trips/${trip.id}`}
+      className="block overflow-hidden rounded-xl border border-line bg-panel/50 transition hover:border-signal/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+    >
       <div className="flex items-start justify-between gap-4 p-6 sm:p-7">
         <div>
           <p className="font-board text-[10px] font-semibold uppercase tracking-[0.22em] text-mist">
@@ -56,6 +60,6 @@ export default function TripCard({ trip }: { trip: Trip }) {
           </span>
         )}
       </div>
-    </article>
+    </Link>
   );
 }

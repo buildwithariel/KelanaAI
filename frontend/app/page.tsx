@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState, type ReactNode } from "react";
+import Board from "../components/Board";
+import ItineraryDays from "../components/ItineraryDays";
 import Nav from "../components/Nav";
 import { API_BASE } from "./lib/api";
 import { parseItinerary } from "./lib/itinerary";
@@ -274,46 +276,7 @@ export default function Home() {
               {trip.days} days in {trip.destination}
             </h2>
 
-            {days.length > 0 ? (
-              <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-                {days.map((day) => (
-                  <article
-                    key={day.title}
-                    className="rounded-xl border border-line bg-panel/50 p-6 sm:p-7"
-                  >
-                    <h3 className="font-display text-xl font-semibold tracking-tight">
-                      {day.title}
-                    </h3>
-                    {day.slots.map((slot) => (
-                      <div key={slot.label} className="mt-6">
-                        <p className="font-board text-[10px] font-semibold uppercase tracking-[0.22em] text-signal">
-                          {slot.label}
-                        </p>
-                        <ul className="mt-3 space-y-2.5">
-                          {slot.items.map((item, i) => (
-                            <li
-                              key={i}
-                              className="border-l border-line pl-4 text-sm leading-relaxed text-paper/75"
-                            >
-                              {item.name && (
-                                <span className="font-semibold text-paper">
-                                  {item.name}.{" "}
-                                </span>
-                              )}
-                              {item.detail}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <pre className="mt-8 overflow-x-auto whitespace-pre-wrap rounded-xl border border-line bg-panel/50 p-6 font-sans text-sm leading-relaxed text-paper/80">
-                {trip.ai_recommendation}
-              </pre>
-            )}
+            <ItineraryDays days={days} raw={trip.ai_recommendation} />
           </>
         )}
       </section>
@@ -329,19 +292,6 @@ async function post(path: string, body?: unknown) {
   });
   if (!response.ok) throw new Error(`POST ${path} returned ${response.status}`);
   return response.json();
-}
-
-function Board({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-deep/80 px-4 py-3.5">
-      <dt className="font-board text-[10px] font-semibold uppercase tracking-[0.2em] text-mist">
-        {label}
-      </dt>
-      <dd className="mt-1 truncate font-board text-lg font-semibold tabular-nums text-signal">
-        {value}
-      </dd>
-    </div>
-  );
 }
 
 function Field({
