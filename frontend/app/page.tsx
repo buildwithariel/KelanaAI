@@ -1,21 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { API_BASE } from "./lib/api";
 import { parseItinerary } from "./lib/itinerary";
-
-type Trip = {
-  id: number;
-  destination: string;
-  days: number;
-  budget: number;
-  category: string;
-  daily_budget: number;
-  travel_season: string;
-  reccomendation_transport: string;
-  ai_recommendation: string | null;
-};
+import type { Trip } from "./lib/types";
 
 type Phase = "idle" | "saving" | "writing" | "done" | "error";
 
@@ -34,7 +24,7 @@ const HEROES: Record<string, { src: string; alt: string }> = {
 };
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const STYLES = ["Backpacker", "Standard", "Luxury"];
+const STYLES = ["Family", "Solo", "Couple"];
 
 const control =
   "h-12 w-full rounded-lg border border-ink/15 bg-white px-3.5 text-[15px] text-ink outline-none transition placeholder:text-ink/35 focus-visible:border-ink/40 focus-visible:ring-2 focus-visible:ring-signal";
@@ -45,7 +35,7 @@ export default function Home() {
     days: "5",
     budget: "2000",
     travel_month: "December",
-    travel_style: "Standard",
+    travel_style: "Solo",
   });
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState("");
@@ -103,9 +93,12 @@ export default function Home() {
             <p className="font-display text-lg font-extrabold tracking-tight">
               Kelana<span className="text-signal">AI</span>
             </p>
-            <p className="font-board text-[10px] font-semibold uppercase tracking-[0.24em] text-mist">
-              AI itinerary planner
-            </p>
+            <Link
+              href="/trips"
+              className="font-board text-[10px] font-semibold uppercase tracking-[0.24em] text-mist transition hover:text-signal"
+            >
+              Trip history
+            </Link>
           </div>
         </header>
 

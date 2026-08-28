@@ -12,5 +12,6 @@ class Trip(Base):
     daily_budget             = Column(Float, nullable=False)
     travel_season            = Column(String, nullable=False)
     reccomendation_transport = Column(String, nullable=False)
+    travel_style             = Column(String, nullable=True)
     ai_recommendation        = Column(Text, nullable=True)
     created_at               = Column(DateTime, server_default=func.now())

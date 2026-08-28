@@ -65,7 +65,8 @@ def create_trips(request: TripRequest):
         category                =trip_category,
         daily_budget            =daily_budget,
         travel_season           =travel_season,
-        reccomendation_transport=reccomendation_transport
+        reccomendation_transport=reccomendation_transport,
+        travel_style            =request.travel_style
     )
 
     db = SessionLocal()
@@ -125,7 +126,7 @@ def generate_trip_recommendation(trip_id: int):
             destination=trip.destination,
             days=trip.days,
             budget=trip.budget,
-            travel_style=trip.category,
+            travel_style=trip.travel_style or trip.category,
         )
         db.commit()
         db.refresh(trip)
