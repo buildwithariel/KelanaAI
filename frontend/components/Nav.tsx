@@ -51,13 +51,20 @@ export default function Nav() {
         </div>
 
         {user ? (
-          <button
-            type="button"
-            onClick={onLogout}
-            className="hidden rounded-full border border-line px-4 py-2 font-board text-xs font-semibold uppercase tracking-[0.1em] text-paper/75 transition hover:border-signal/40 hover:text-signal sm:inline-block"
-          >
-            Log out
-          </button>
+          <div className="hidden items-center gap-3 sm:flex">
+            {user.name && (
+              <span className="font-board text-xs uppercase tracking-[0.1em] text-mist">
+                Welcome back, {user.name}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={onLogout}
+              className="rounded-full border border-line px-4 py-2 font-board text-xs font-semibold uppercase tracking-[0.1em] text-paper/75 transition hover:border-signal/40 hover:text-signal"
+            >
+              Log out
+            </button>
+          </div>
         ) : (
           <div className="hidden items-center gap-2 sm:flex">
             <Link

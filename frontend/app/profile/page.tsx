@@ -1,13 +1,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Board from "../../components/Board";
 import Nav from "../../components/Nav";
+import { authFetch } from "../lib/auth";
 import { useAuth } from "../AuthProvider";
 import RequireAuth from "../RequireAuth";
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [tripCount, setTripCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    authFetch("/api/v1/trips")
+      .then((response) => (response.ok ? response.json() : []))
+      .then((trips: unknown[]) => setTripCount(trips.length))
+      .catch(() => setTripCount(0));
+  }, []);
 
   function onLogout() {
     logout();
@@ -27,12 +38,11 @@ export default function ProfilePage() {
             Profile
           </h1>
 
-          <div className="mt-8 rounded-xl border border-line bg-panel/50 p-7">
-            <p className="font-board text-[10px] font-semibold uppercase tracking-[0.2em] text-mist">
-              Email
-            </p>
-            <p className="mt-2 font-display text-xl font-semibold">{user?.email}</p>
-          </div>
+          <dl className="mt-8 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
+            <Board label="Name" value={user?.name ?? "—"} />
+            <Board label="Email" value={user?.email ?? "—"} />
+            <Board label="Total trips generated" value={tripCount === null ? "…" : String(tripCount)} />
+          </dl>
 
           <button
             type="button"

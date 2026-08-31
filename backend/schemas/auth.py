@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
 class RegisterRequest(BaseModel):
+    name: str
     email: str
     password: str = Field(min_length=8, max_length=72)
 
@@ -15,4 +16,5 @@ class TokenResponse(BaseModel):
 class UserOut(BaseModel):
     model_config = {"from_attributes": True}
     id: int
+    name: str | None = None
     email: str

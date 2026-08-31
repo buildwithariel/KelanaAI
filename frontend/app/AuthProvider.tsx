@@ -10,7 +10,7 @@ type AuthContextValue = {
   user: User | null;
   status: Status;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -52,10 +52,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     setUser(await fetchMe());
   }
 
-  async function register(email: string, password: string) {
+  async function register(name: string, email: string, password: string) {
     const response = await authFetch("/api/v1/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ name, email, password }),
     });
     if (!response.ok) {
       const body = await response.json().catch(() => null);

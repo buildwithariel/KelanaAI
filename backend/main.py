@@ -70,7 +70,11 @@ def register(request: RegisterRequest):
     try:
         if db.query(User).filter(User.email == request.email).first() is not None:
             raise HTTPException(status_code=400, detail="Email already registered")
-        user = User(email=request.email, hashed_password=hash_password(request.password))
+        user = User(
+            name=request.name,
+            email=request.email,
+            hashed_password=hash_password(request.password),
+        )
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -91,7 +95,7 @@ def login(request: LoginRequest):
 
 @app.get("/api/v1/auth/me", response_model=UserOut)
 def me(current_user: CurrentUser = Depends(get_current_user)):
-    return UserOut(id=current_user.id, email=current_user.email)
+    return UserOut(id=current_user.id, name=current_user.name, email=current_user.email)
 
 @app.post("/api/v1/trips")
 def create_trips(request: TripRequest, current_user: CurrentUser = Depends(get_current_user)):

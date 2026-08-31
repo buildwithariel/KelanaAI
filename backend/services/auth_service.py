@@ -38,6 +38,7 @@ def create_access_token(user_id: int) -> str:
 class CurrentUser:
     id: int
     email: str
+    name: str | None
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
@@ -52,13 +53,13 @@ def get_current_user(
 
     db = SessionLocal()
     try:
-        row = db.query(User.id, User.email).filter(User.id == user_id).first()
+        row = db.query(User.id, User.email, User.name).filter(User.id == user_id).first()
     finally:
         db.close()
 
     if row is None:
         raise HTTPException(status_code=401, detail="User no longer exists")
-    return CurrentUser(id=row.id, email=row.email)
+    return CurrentUser(id=row.id, email=row.email, name=row.name)
 
 def get_owned_trip(trip_id: int, current_user_id: int, db: Session) -> Trip:
     trip = db.query(Trip).filter(Trip.id == trip_id).first()

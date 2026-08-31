@@ -10,6 +10,7 @@ import { useAuth } from "../AuthProvider";
 export default function RegisterPage() {
   const { user, status, register } = useAuth();
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -29,7 +30,7 @@ export default function RegisterPage() {
     }
     setBusy(true);
     try {
-      await register(email, password);
+      await register(name, email, password);
       router.push("/");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -54,6 +55,17 @@ export default function RegisterPage() {
           onSubmit={onSubmit}
           className="mt-8 flex flex-col gap-5 rounded-2xl bg-paper p-7 text-ink shadow-2xl shadow-black/50 sm:p-9"
         >
+          <Field id="name" label="Name">
+            <input
+              id="name"
+              className={control}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              required
+            />
+          </Field>
+
           <Field id="email" label="Email">
             <input
               id="email"
