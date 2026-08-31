@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import Board from "../../../components/Board";
 import ItineraryDays from "../../../components/ItineraryDays";
 import Nav from "../../../components/Nav";
+import RequireAuth from "../../RequireAuth";
+import { authFetch } from "../../lib/auth";
 import { API_BASE } from "../../lib/api";
 import { parseItinerary } from "../../lib/itinerary";
 import type { Trip } from "../../lib/types";
@@ -20,9 +22,9 @@ export default function TripDetail() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_BASE}/api/v1/trips/${id}`)
+    authFetch(`/api/v1/trips/${id}`)
       .then((response) => {
-        if (response.status === 404) throw new Error("not-found");
+        if (response.status === 404 || response.status === 403) throw new Error("not-found");
         if (!response.ok) throw new Error(`GET /api/v1/trips/${id} returned ${response.status}`);
         return response.json();
       })
@@ -48,6 +50,7 @@ export default function TripDetail() {
   const days = parseItinerary(trip?.ai_recommendation ?? "");
 
   return (
+    <RequireAuth>
     <main className="flex-1">
       <Nav />
 
@@ -119,5 +122,6 @@ export default function TripDetail() {
         )}
       </section>
     </main>
+    </RequireAuth>
   );
 }

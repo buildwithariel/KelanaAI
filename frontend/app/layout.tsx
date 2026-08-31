@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo, Geist, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import AuthProvider from "./AuthProvider";
 import { API_BASE } from "./lib/api";
 
 const archivo = Archivo({
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${archivo.variable} ${geistSans.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-night font-sans text-paper">
-        {children}
+        <AuthProvider>{children}</AuthProvider>
 
         <footer className="mt-auto border-t border-line bg-deep">
           <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-12 sm:flex-row sm:items-start sm:justify-between">

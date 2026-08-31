@@ -1,3 +1,8 @@
+export type User = {
+  id: number;
+  email: string;
+};
+
 export type Trip = {
   id: number;
   destination: string;

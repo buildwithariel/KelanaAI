@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Nav from "../../components/Nav";
 import TripCard from "../../components/TripCard";
+import RequireAuth from "../RequireAuth";
+import { authFetch } from "../lib/auth";
 import { API_BASE } from "../lib/api";
 import type { Trip } from "../lib/types";
 
@@ -19,7 +21,7 @@ export default function TripHistory() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_BASE}/api/v1/trips`)
+    authFetch("/api/v1/trips")
       .then((response) => {
         if (!response.ok) throw new Error(`GET /api/v1/trips returned ${response.status}`);
         return response.json();
@@ -44,6 +46,7 @@ export default function TripHistory() {
   const pageTrips = trips.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
+    <RequireAuth>
     <main className="flex-1">
       <Nav />
 
@@ -122,5 +125,6 @@ export default function TripHistory() {
         )}
       </section>
     </main>
+    </RequireAuth>
   );
 }

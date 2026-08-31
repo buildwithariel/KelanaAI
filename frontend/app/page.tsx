@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import Board from "../components/Board";
+import Field, { control } from "../components/Field";
 import ItineraryDays from "../components/ItineraryDays";
 import Nav from "../components/Nav";
+import RequireAuth from "./RequireAuth";
+import { authFetch } from "./lib/auth";
 import { API_BASE } from "./lib/api";
 import { parseItinerary } from "./lib/itinerary";
 import type { Trip } from "./lib/types";
@@ -27,9 +30,6 @@ const HEROES: Record<string, { src: string; alt: string }> = {
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const STYLES = ["Family", "Solo", "Couple"];
-
-const control =
-  "h-12 w-full rounded-lg border border-ink/15 bg-white px-3.5 text-[15px] text-ink outline-none transition placeholder:text-ink/35 focus-visible:border-ink/40 focus-visible:ring-2 focus-visible:ring-signal";
 
 export default function Home() {
   const [form, setForm] = useState({
@@ -76,6 +76,7 @@ export default function Home() {
   const days = parseItinerary(trip?.ai_recommendation ?? "");
 
   return (
+    <RequireAuth>
     <main className="flex-1">
       <Nav />
 
@@ -281,37 +282,15 @@ export default function Home() {
         )}
       </section>
     </main>
+    </RequireAuth>
   );
 }
 
 async function post(path: string, body?: unknown) {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await authFetch(path, {
     method: "POST",
-    headers: body ? { "Content-Type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!response.ok) throw new Error(`POST ${path} returned ${response.status}`);
   return response.json();
-}
-
-function Field({
-  id,
-  label,
-  children,
-}: {
-  id: string;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label
-        htmlFor={id}
-        className="font-board text-[10px] font-semibold uppercase tracking-[0.18em] text-ink/55"
-      >
-        {label}
-      </label>
-      {children}
-    </div>
-  );
 }
