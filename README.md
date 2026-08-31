@@ -1,18 +1,20 @@
 # KelanaAI
 
-AI-powered travel planning REST API. Membantu pengguna merencanakan perjalanan berdasarkan destinasi, durasi, dan anggaran — lengkap dengan rekomendasi transportasi, musim perjalanan, dan kategori trip.
+AI-native travel planning app. Isi destinasi, durasi, dan anggaran — Amazon Bedrock menyusun itinerary harian (morning/afternoon/evening, situs budaya, dinner spot, nightlife), disimpan ke PostgreSQL lewat FastAPI, dan ditampilkan di dashboard Next.js dengan riwayat trip yang bisa dibuka satu per satu.
 
 ---
 
 ## Tech Stack
 
-- **Python** — Bahasa pemrograman utama
-- **FastAPI** — Web framework untuk REST API
-- **SQLAlchemy** — ORM untuk interaksi dengan database
-- **PostgreSQL** — Database penyimpanan data trip
-- **psycopg2** — Driver koneksi PostgreSQL
-- **python-dotenv** — Manajemen environment variable
-- **Uvicorn** — ASGI server
+**Backend**
+- **Python** + **FastAPI** — REST API
+- **SQLAlchemy** + **PostgreSQL** (`psycopg2`) — persistence
+- **boto3** — Amazon Bedrock (Converse API) untuk generate itinerary
+- **python-dotenv**, **Uvicorn**
+
+**Frontend**
+- **Next.js 16** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS 4**
 
 ---
 
@@ -22,59 +24,81 @@ AI-powered travel planning REST API. Membantu pengguna merencanakan perjalanan b
 KelanaAI/
 ├── README.md
 ├── .gitignore
-└── backend/
-    ├── main.py              # Entry point — routing & endpoint API
-    ├── database.py          # Konfigurasi koneksi & inisialisasi database
-    ├── seed.sql             # Script untuk mengisi data awal (opsional)
-    ├── requirements.txt     # Daftar dependencies Python
-    ├── .env                 # Environment variable (tidak di-commit)
-    ├── models/
-    │   └── trip.py          # ORM model untuk tabel trips
-    └── services/
-        └── trip_service.py  # Business logic (kategori, budget, rekomendasi)
+├── backend/
+│   ├── main.py                    # Entry point — routing & endpoint API
+│   ├── database.py                # Konfigurasi koneksi & inisialisasi database
+│   ├── requirements.txt
+│   ├── .env                       # Environment variable (tidak di-commit)
+│   ├── models/
+│   │   └── trip.py                # ORM model tabel `trips`
+│   └── services/
+│       ├── trip_service.py        # Business logic (kategori, budget, rekomendasi)
+│       └── bedrock_service.py     # Prompt & panggilan Amazon Bedrock
+└── frontend/
+    ├── app/
+    │   ├── page.tsx                # Halaman utama — form & hasil itinerary
+    │   ├── trips/page.tsx          # Trip History Dashboard (paginated)
+    │   ├── trips/[id]/page.tsx     # Detail satu trip
+    │   └── lib/                    # API base URL, tipe Trip, parser itinerary
+    └── components/                 # Nav, TripCard, Board, ItineraryDays
 ```
 
 ---
 
 ## Cara Setup & Menjalankan
 
-### 1. Clone & Masuk ke Folder
+Backend dan frontend jalan sebagai dua proses terpisah — buka 2 terminal.
+
+### 1. Backend (FastAPI)
 
 ```bash
-git clone <url-repo>
-cd KelanaAI/backend
-```
-
-### 2. Buat Virtual Environment
-
-```bash
+cd backend
 python -m venv .venv
-.venv\Scripts\activate   # Windows
-```
-
-### 3. Install Dependencies
-
-```bash
+.venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Buat File `.env`
-
-Buat file `backend/.env` dan isi dengan:
+Buat `backend/.env`:
 
 ```env
 DATABASE_URL=postgresql://username:password@localhost:5432/kelana_db
+
+AWS_REGION=ap-southeast-2
+MODEL_ID=amazon.nova-lite-v1:0
+AWS_BEARER_TOKEN_BEDROCK=<bedrock-api-key-kamu>
 ```
 
-> Pastikan database `kelana_db` sudah dibuat terlebih dahulu di PostgreSQL.
+> Pastikan database `kelana_db` sudah dibuat di PostgreSQL, dan kamu punya Bedrock API key (atau kredensial AWS biasa) dengan akses ke model di atas.
 
-### 5. Jalankan Server
+Jalankan:
 
 ```bash
 uvicorn main:app --reload
 ```
 
-Server berjalan di: `http://localhost:8000`
+Server: `http://localhost:8000` — Swagger UI di `http://localhost:8000/docs`.
+
+### 2. Frontend (Next.js)
+
+Di terminal lain:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Buka `http://localhost:3000`. Frontend memanggil backend di `http://localhost:8000` secara default (override lewat `NEXT_PUBLIC_API_URL` kalau perlu).
+
+---
+
+## Halaman Frontend
+
+| Route | Isi |
+|-------|-----|
+| `/` | Form rencana trip + hasil itinerary yang baru dibuat |
+| `/trips` | Trip History Dashboard — semua trip sebagai kartu, 10 per halaman |
+| `/trips/{id}` | Detail satu trip: stats + itinerary harian lengkap |
 
 ---
 
@@ -88,6 +112,7 @@ Server berjalan di: `http://localhost:8000`
 | `GET` | `/api/v1/trips` | Ambil semua trip |
 | `GET` | `/api/v1/trips/{id}` | Ambil trip berdasarkan ID |
 | `PUT` | `/api/v1/trips/{id}` | Update budget trip (recalculate otomatis) |
+| `POST` | `/api/v1/trips/{id}/generate` | Generate itinerary via Amazon Bedrock, simpan ke `ai_recommendation` |
 | `DELETE` | `/api/v1/trips/{id}` | Hapus trip berdasarkan ID |
 | `GET` | `/api/v1/recommendations` | Rekomendasi tempat wisata |
 | `GET` | `/api/v1/transportations` | Daftar transportasi |
@@ -106,7 +131,7 @@ Server berjalan di: `http://localhost:8000`
   "budget": 2500,
   "currency": "USD",
   "travel_month": "december",
-  "travel_style": "Standard"
+  "travel_style": "Solo"
 }
 ```
 
@@ -122,6 +147,10 @@ Server berjalan di: `http://localhost:8000`
   "daily_budget": 357.143,
   "travel_season": "Peak Season",
   "reccomendation_transport": "Train",
+  "travel_style": "Solo",
+  "ai_recommendation": null,
   "created_at": "2026-08-21T22:46:24"
 }
 ```
+
+**POST `/api/v1/trips/1/generate`** mengisi `ai_recommendation` dengan itinerary markdown per hari (Morning/Afternoon/Evening) dan menyimpannya ke database.
