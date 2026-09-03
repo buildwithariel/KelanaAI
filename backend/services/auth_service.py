@@ -68,3 +68,39 @@ def get_owned_trip(trip_id: int, current_user_id: int, db: Session) -> Trip:
     if trip.user_id != current_user_id:
         raise HTTPException(status_code=403, detail="You don't have access to this trip")
     return trip
+
+
+# ── Auth operations ───────────────────────────────────────────────────────────
+# Keep the register/login logic here in the service layer; main.py just wires
+# the HTTP endpoints to these. The caller owns the DB session lifecycle.
+
+def register_user(db: Session, name: str, email: str, password: str) -> User:
+    """Create and persist a new user. Raises ValueError if the email is taken."""
+    if db.query(User).filter(User.email == email).first() is not None:
+        raise ValueError("Email already registered")
+
+    user = User(
+        name=name,
+        email=email,
+        hashed_password=hash_password(password),
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def login_user(db: Session, email: str, password: str) -> dict:
+    """Validate credentials and return a bearer-token response.
+
+    Returns {"access_token": "...", "token_type": "bearer"}.
+    Raises ValueError on a bad email or wrong password.
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if user is None or not verify_password(password, user.hashed_password):
+        raise ValueError("Invalid email or password")
+
+    return {
+        "access_token": create_access_token(user.id),
+        "token_type": "bearer",
+    }

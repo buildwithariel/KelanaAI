@@ -6,6 +6,7 @@ import { useAuth } from "../app/AuthProvider";
 
 const LOGGED_IN_LINKS = [
   { href: "/", label: "Home" },
+  { href: "/assistant", label: "Assistant" },
   { href: "/trips", label: "Trip history" },
   { href: "/profile", label: "Profile" },
 ];

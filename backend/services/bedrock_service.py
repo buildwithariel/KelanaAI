@@ -90,6 +90,30 @@ def get_ai_recommendation(
 
     return response["output"]["message"]["content"][0]["text"]
 
+
+def ask_base_model(question: str) -> str:
+    """
+    Ask the foundation model a free-form question with NO retrieval / knowledge base.
+
+    Used side-by-side with kb_service.ask_knowledge_base() to show the difference
+    between a plain base-model answer and a document-grounded (RAG) answer.
+    """
+    if not AWS_BEARER_TOKEN_BEDROCK:
+        raise ValueError("AWS_BEARER_TOKEN_BEDROCK environment variable is missing")
+
+    client = get_bedrock_client()
+    response = client.converse(
+        modelId=MODEL_ID,
+        messages=[
+            {
+                "role": "user",
+                "content": [{"text": question}],
+            }
+        ],
+    )
+    return response["output"]["message"]["content"][0]["text"]
+
+
 if __name__ == "__main__":
     prompt = TRAVEL_PLANNER_PROMPT.format(
         days=2, destination="Tokyo", budget=200.0, travel_style="Standard"

@@ -4,6 +4,13 @@ export type User = {
   email: string;
 };
 
+export type AssistantAnswer = {
+  question: string;
+  answer: string;
+  sources: string[];
+  grounded: boolean;
+};
+
 export type Trip = {
   id: number;
   destination: string;
