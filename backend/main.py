@@ -5,6 +5,14 @@ from models.trip import Trip
 from models.user import User
 from database import SessionLocal, init_db
 
+from services.conversation_service import (
+    create_conversation,
+    list_conversations,
+    get_owned_conversation,
+    list_messages,
+    send_message,
+)
+
 from services.trip_service import (
     get_trip_category,
     get_travel_season,
@@ -56,6 +64,12 @@ class BudgetUpdateRequest(BaseModel):
 
 class QuestionRequest(BaseModel):
     question: str
+
+class ConversationCreateRequest(BaseModel):
+    title: str | None = None
+
+class MessageRequest(BaseModel):
+    content: str
 
 app = FastAPI()
 
@@ -239,6 +253,58 @@ def ask_assistant(
         "sources": result["sources"],
         "grounded": result["grounded"],
     }
+
+@app.post("/api/v1/conversations", status_code=201)
+def create_conversation_endpoint(
+    request: ConversationCreateRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Session 10 — start a new conversation. Its title fills in from the first message."""
+    db = SessionLocal()
+    try:
+        conversation = create_conversation(db, current_user.id, request.title)
+        return {"conversation_id": conversation.id}
+    finally:
+        db.close()
+
+@app.get("/api/v1/conversations")
+def list_conversations_endpoint(current_user: CurrentUser = Depends(get_current_user)):
+    """List this user's conversations, most recent first."""
+    db = SessionLocal()
+    try:
+        return list_conversations(db, current_user.id)
+    finally:
+        db.close()
+
+@app.get("/api/v1/conversations/{conversation_id}/messages")
+def list_conversation_messages(
+    conversation_id: int, current_user: CurrentUser = Depends(get_current_user)
+):
+    """Reload a conversation's history — used to resume it (PDF Part 7)."""
+    db = SessionLocal()
+    try:
+        get_owned_conversation(conversation_id, current_user.id, db)
+        return list_messages(db, conversation_id)
+    finally:
+        db.close()
+
+@app.post("/api/v1/conversations/{conversation_id}/messages")
+def send_conversation_message(
+    conversation_id: int,
+    request: MessageRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Session 10 — the send-message orchestration: save the user's turn, rebuild
+    the prompt from the full stored history, call Bedrock, save + return the
+    AI's context-aware reply.
+    """
+    db = SessionLocal()
+    try:
+        conversation = get_owned_conversation(conversation_id, current_user.id, db)
+        return send_message(db, conversation, request.content)
+    finally:
+        db.close()
 
 @app.get("/api/v1/recommendations")
 def get_recommendations(destination: str):

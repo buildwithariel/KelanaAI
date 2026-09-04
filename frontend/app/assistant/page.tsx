@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Nav from "../../components/Nav";
 import RequireAuth from "../RequireAuth";
 import { authFetch } from "../lib/auth";
@@ -9,23 +9,47 @@ import type { AssistantAnswer } from "../lib/types";
 
 type Phase = "idle" | "asking" | "done" | "error";
 
+type ChatMessage = {
+  id: number;
+  role: "user" | "assistant";
+  text: string;
+  ts: number;
+  sources?: string[];
+  grounded?: boolean;
+};
+
 const SAMPLE_QUESTIONS = [
   "What documents do I need for a short-term visa to Japan?",
   "How do I prove I can pay for my trip to Japan?",
   "Do I need travel insurance for Japan?",
 ];
 
+function formatTime(ts: number) {
+  return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function TravelAssistant() {
   const [question, setQuestion] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
-  const [result, setResult] = useState<AssistantAnswer | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to the latest message: covers both first-open (mount) and
+  // every new message, since this effect re-runs whenever the list grows.
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: "end" });
+  }, [messages.length, phase]);
 
   async function ask(q: string) {
     const trimmed = q.trim();
     if (!trimmed || phase === "asking") return;
     setPhase("asking");
     setError("");
+    setMessages((prev) => [
+      ...prev,
+      { id: Date.now(), role: "user", text: trimmed, ts: Date.now() },
+    ]);
     try {
       const response = await authFetch("/api/v1/assistant", {
         method: "POST",
@@ -34,7 +58,18 @@ export default function TravelAssistant() {
       if (!response.ok) {
         throw new Error(`POST /api/v1/assistant returned ${response.status}`);
       }
-      setResult((await response.json()) as AssistantAnswer);
+      const result = (await response.json()) as AssistantAnswer;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: "assistant",
+          text: result.answer,
+          ts: Date.now(),
+          sources: result.sources,
+          grounded: result.grounded,
+        },
+      ]);
       setPhase("done");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -99,46 +134,72 @@ export default function TravelAssistant() {
             </div>
           </form>
 
-          {phase === "error" && (
-            <div className="mt-10 rounded-xl border border-signal/40 bg-signal/10 px-6 py-6">
-              <p className="font-display text-lg font-semibold text-signal">
-                Couldn&apos;t reach the assistant
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-paper/80">
-                {error}. Check that FastAPI is running on{" "}
-                <code className="font-board text-signal">{API_BASE}</code>.
-              </p>
-            </div>
-          )}
-
-          {phase === "done" && result && (
-            <article className="mt-10 rounded-xl border border-line bg-panel/50 px-6 py-6">
-              <p className="font-board text-[10px] font-semibold uppercase tracking-[0.2em] text-signal">
-                {result.grounded ? "Grounded answer" : "No matching documents"}
-              </p>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-paper/90">
-                {result.answer}
-              </p>
-
-              {result.sources.length > 0 && (
-                <div className="mt-5 border-t border-line/60 pt-4">
-                  <p className="font-board text-[10px] font-semibold uppercase tracking-[0.2em] text-mist">
-                    Source{result.sources.length > 1 ? "s" : ""}
+          <div className="mt-10 space-y-4">
+            {messages.map((m) => (
+              <article
+                key={m.id}
+                className={`rounded-xl border px-6 py-5 ${
+                  m.role === "user"
+                    ? "ml-auto max-w-[85%] border-signal/30 bg-signal/10"
+                    : "border-line bg-panel/50"
+                }`}
+              >
+                {m.role === "assistant" && (
+                  <p className="font-board text-[10px] font-semibold uppercase tracking-[0.2em] text-signal">
+                    {m.grounded ? "Grounded answer" : "No matching documents"}
                   </p>
-                  <ul className="mt-2 space-y-1">
-                    {result.sources.map((s) => (
-                      <li
-                        key={s}
-                        className="font-board text-xs tracking-[0.04em] text-paper/75"
-                      >
-                        ▤ {s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </article>
-          )}
+                )}
+                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-paper/90">
+                  {m.text}
+                </p>
+
+                {m.sources && m.sources.length > 0 && (
+                  <div className="mt-5 border-t border-line/60 pt-4">
+                    <p className="font-board text-[10px] font-semibold uppercase tracking-[0.2em] text-mist">
+                      Source{m.sources.length > 1 ? "s" : ""}
+                    </p>
+                    <ul className="mt-2 space-y-1">
+                      {m.sources.map((s) => (
+                        <li
+                          key={s}
+                          className="font-board text-xs tracking-[0.04em] text-paper/75"
+                        >
+                          ▤ {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <p className="mt-2 font-board text-[10px] tracking-[0.1em] text-mist">
+                  {formatTime(m.ts)}
+                </p>
+              </article>
+            ))}
+
+            {phase === "asking" && (
+              <article className="rounded-xl border border-line bg-panel/50 px-6 py-5">
+                <p className="text-sm text-mist">
+                  KelanaAI is typing
+                  <span className="animate-pulse">…</span>
+                </p>
+              </article>
+            )}
+
+            {phase === "error" && (
+              <div className="rounded-xl border border-signal/40 bg-signal/10 px-6 py-6">
+                <p className="font-display text-lg font-semibold text-signal">
+                  Couldn&apos;t reach the assistant
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-paper/80">
+                  {error}. Check that FastAPI is running on{" "}
+                  <code className="font-board text-signal">{API_BASE}</code>.
+                </p>
+              </div>
+            )}
+
+            <div ref={bottomRef} />
+          </div>
         </section>
       </main>
     </RequireAuth>

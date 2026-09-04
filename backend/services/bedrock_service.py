@@ -114,6 +114,29 @@ def ask_base_model(question: str) -> str:
     return response["output"]["message"]["content"][0]["text"]
 
 
+def ask_conversation(messages: list[dict]) -> str:
+    """
+    Session 10 — context-aware chat.
+
+    `messages` is the full conversation history, oldest first, each item
+    {"role": "user" | "assistant", "content": str}. Sending the whole thread
+    (instead of just the latest turn) is what lets the model answer follow-up
+    questions like "what about Day 2?" correctly — see prompt_builder in the
+    session slides.
+    """
+    if not AWS_BEARER_TOKEN_BEDROCK:
+        raise ValueError("AWS_BEARER_TOKEN_BEDROCK environment variable is missing")
+
+    client = get_bedrock_client()
+    response = client.converse(
+        modelId=MODEL_ID,
+        messages=[
+            {"role": m["role"], "content": [{"text": m["content"]}]} for m in messages
+        ],
+    )
+    return response["output"]["message"]["content"][0]["text"]
+
+
 if __name__ == "__main__":
     prompt = TRAVEL_PLANNER_PROMPT.format(
         days=2, destination="Tokyo", budget=200.0, travel_style="Standard"

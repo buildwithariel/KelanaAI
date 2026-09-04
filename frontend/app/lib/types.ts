@@ -11,6 +11,14 @@ export type AssistantAnswer = {
   grounded: boolean;
 };
 
+export type ConversationMessage = {
+  id: number;
+  conversation_id: number;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+};
+
 export type Trip = {
   id: number;
   destination: string;
