@@ -1,0 +1,6 @@
+# Never upload these when running `fastapi deploy` from this directory.
+.env
+.venv/
+__pycache__/
+*.pyc
+.fastapicloud/

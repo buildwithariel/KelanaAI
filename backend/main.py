@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
@@ -72,10 +74,16 @@ class MessageRequest(BaseModel):
 app = FastAPI()
 
 # The Next.js frontend runs on its own origin, so the browser needs permission
-# to call this API from there.
+# to call this API from there. In production set CORS_ORIGINS to the deployed
+# frontend URL(s), comma-separated.
+CORS_ORIGINS = [
+    o.strip()
+    for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

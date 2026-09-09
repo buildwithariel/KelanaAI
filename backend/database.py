@@ -9,8 +9,10 @@ load_dotenv()
 # connection string from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# engine = the connection pool
-engine = create_engine(DATABASE_URL)
+# engine = the connection pool.
+# pool_pre_ping + pool_recycle keep it healthy when a managed Postgres (Neon,
+# RDS, ...) closes idle connections between requests.
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=300)
 
 # SessionLocal = a factory for DB sessions
 SessionLocal = sessionmaker(bind=engine, autoflush=False)

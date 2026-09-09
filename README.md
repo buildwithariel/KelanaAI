@@ -158,6 +158,80 @@ Tes backend memakai SQLite sementara di direktori temp OS, jadi database
 `kelana_db` tidak tersentuh. Panggilan Bedrock nyata (generate itinerary, kirim
 pesan chat) dan retrieval Knowledge Base tidak ikut dites.
 
+## Deploy
+
+Database di Neon, backend di FastAPI Cloud, frontend di Vercel. Urutannya:
+DB dulu, lalu backend, lalu frontend, terakhir sambungkan CORS.
+
+### 1. PostgreSQL di Neon
+
+1. Buat project di [neon.tech](https://neon.tech), pilih region terdekat.
+2. Salin connection string (pakai endpoint **Pooled connection**), bentuknya:
+   `postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require`
+3. Jalankan skema ke Neon dari mesin kamu:
+
+   ```bash
+   cd backend
+   DATABASE_URL="postgresql://...neon.../neondb?sslmode=require" python migrate.py
+   ```
+
+   (Di PowerShell: `$env:DATABASE_URL="..."; python migrate.py`.) Tabel juga
+   otomatis dibuat saat backend pertama kali start, jadi langkah ini opsional
+   tapi memastikan `schema_migrations` terisi.
+
+### 2. Backend di FastAPI Cloud
+
+1. Install CLI-nya lokal: `pip install --upgrade "fastapi[standard]"`.
+   Di Windows jalankan dari Windows Terminal (UTF-8), atau set
+   `PYTHONIOENCODING=utf-8`, kalau tidak output CLI-nya bisa crash.
+2. Dari folder `backend/`:
+
+   ```bash
+   fastapi login
+   fastapi deploy
+   ```
+
+   CLI mendeteksi `main.py` + `app`, mem-package folder ini (menghormati
+   `.gitignore`, jadi `.env` tidak ikut), dan memberi URL seperti
+   `https://kelanaai-xxx.fastapicloud.dev`.
+3. Di dashboard FastAPI Cloud, App Details -> Environment Variables, tambahkan
+   (tandai yang sensitif sebagai **Secret**), lalu Save and Redeploy:
+
+   | Nama | Nilai |
+   |---|---|
+   | `DATABASE_URL` | connection string Neon dari langkah 1 |
+   | `JWT_SECRET_KEY` | string acak minimal 32 karakter |
+   | `AWS_REGION` | mis. `ap-southeast-2` |
+   | `MODEL_ID` | `amazon.nova-lite-v1:0` |
+   | `AWS_BEARER_TOKEN_BEDROCK` | token Bedrock (atau pakai `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`) |
+   | `KNOWLEDGE_BASE_ID` | id Knowledge Base (kalau mau chat ter-ground) |
+   | `CORS_ORIGINS` | isi setelah frontend jadi (langkah 4) |
+
+4. Deploy ulang tiap ada perubahan cukup `fastapi deploy` lagi dari `backend/`.
+
+### 3. Frontend di Vercel
+
+1. Di [vercel.com](https://vercel.com), Add New Project, import repo GitHub-nya.
+2. **Root Directory**: `frontend`. Framework Next.js terdeteksi otomatis.
+3. Environment Variables: `NEXT_PUBLIC_API_URL` = URL FastAPI Cloud dari langkah 2
+   (mis. `https://kelanaai-xxx.fastapicloud.dev`).
+4. Deploy. Vercel memberi URL seperti `https://kelanaai.vercel.app`.
+
+### 4. Sambungkan CORS
+
+Kembali ke FastAPI Cloud, set `CORS_ORIGINS` ke URL Vercel (bisa lebih dari satu,
+pisahkan koma, tanpa slash di akhir):
+
+```
+CORS_ORIGINS=https://kelanaai.vercel.app,https://kelanaai-git-main-user.vercel.app
+```
+
+Save and Redeploy. Setelah ini frontend produksi bisa memanggil backend.
+
+> Alternatif backend kalau FastAPI Cloud tidak cocok: Render, Railway, atau
+> Fly.io. Semua butuh `requirements.txt` (sudah ada) dan perintah start
+> `uvicorn main:app --host 0.0.0.0 --port $PORT` dari `backend/`.
+
 ## Route frontend
 
 | Route | Isi |
