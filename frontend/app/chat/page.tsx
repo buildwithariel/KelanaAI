@@ -4,12 +4,34 @@ import { useEffect, useRef, useState } from "react";
 import Nav from "../../components/Nav";
 import RequireAuth from "../RequireAuth";
 import TripProposalCard from "../../components/TripProposalCard";
+import Markdown from "../../components/Markdown";
 import { authFetch } from "../lib/auth";
 import { API_BASE } from "../lib/api";
 import { parseTripProposal } from "../lib/itinerary";
 import type { ConversationMessage } from "../lib/types";
 
 type Phase = "idle" | "asking" | "error";
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        } catch {
+          /* clipboard blocked (non-secure context) — selection still works */
+        }
+      }}
+      className="font-board text-[10px] font-semibold uppercase tracking-[0.14em] text-mist transition hover:text-signal"
+    >
+      {copied ? "Copied" : "Copy"}
+    </button>
+  );
+}
 
 const STORAGE_KEY = "kelana_chat_conversation_id";
 
@@ -108,7 +130,7 @@ export default function ChatPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-board text-[10px] font-semibold uppercase tracking-[0.28em] text-signal">
-                Chat
+                Assistant
               </p>
               <h1 className="mt-3 font-display text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
                 {title ?? "New conversation"}
@@ -138,9 +160,13 @@ export default function ChatPage() {
                       : "border-line bg-panel/50"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-paper/90">
-                    {cleaned}
-                  </p>
+                  {m.role === "assistant" ? (
+                    <Markdown>{cleaned}</Markdown>
+                  ) : (
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-paper/90">
+                      {cleaned}
+                    </p>
+                  )}
 
                   {proposal && <TripProposalCard proposal={proposal} />}
 
@@ -159,9 +185,12 @@ export default function ChatPage() {
                     </div>
                   )}
 
-                  <p className="mt-2 font-board text-[10px] tracking-[0.1em] text-mist">
-                    {formatTime(m.created_at)}
-                  </p>
+                  <div className="mt-2 flex items-center gap-4">
+                    <p className="font-board text-[10px] tracking-[0.1em] text-mist">
+                      {formatTime(m.created_at)}
+                    </p>
+                    {m.role === "assistant" && <CopyButton text={cleaned} />}
+                  </div>
                 </article>
               );
             })}

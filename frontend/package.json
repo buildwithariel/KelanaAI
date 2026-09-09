@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test app/lib/itinerary.test.ts"
+    "test": "node --test app/lib/itinerary.test.ts app/lib/markdown.test.ts"
   },
   "dependencies": {
     "next": "16.3.3",
