@@ -90,6 +90,18 @@ export default function ChatPage() {
     setDrawerOpen(false);
   }
 
+  async function deleteConversation(id: number) {
+    if (!window.confirm("Delete this conversation? This can't be undone.")) return;
+    const res = await authFetch(`/api/v1/conversations/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      setError(`Couldn't delete that conversation (${res.status}).`);
+      setPhase("error");
+      return;
+    }
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    if (id === conversationId) startNewChat();
+  }
+
   function openConversation(id: number) {
     setDrawerOpen(false);
     if (id === conversationId) return;
@@ -162,6 +174,7 @@ export default function ChatPage() {
     activeId: conversationId,
     onSelect: openConversation,
     onNewChat: startNewChat,
+    onDelete: deleteConversation,
   };
 
   return (

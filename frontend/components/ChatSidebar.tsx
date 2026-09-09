@@ -5,6 +5,7 @@ type Props = {
   activeId: number | null;
   onSelect: (id: number) => void;
   onNewChat: () => void;
+  onDelete: (id: number) => void;
   className?: string;
 };
 
@@ -13,6 +14,7 @@ export default function ChatSidebar({
   activeId,
   onSelect,
   onNewChat,
+  onDelete,
   className = "",
 }: Props) {
   return (
@@ -37,12 +39,12 @@ export default function ChatSidebar({
             {conversations.map((c) => {
               const active = c.id === activeId;
               return (
-                <li key={c.id}>
+                <li key={c.id} className="group relative">
                   <button
                     type="button"
                     onClick={() => onSelect(c.id)}
                     aria-current={active ? "true" : undefined}
-                    className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition ${
+                    className={`flex w-full items-center gap-2 rounded-md py-2 pl-3 pr-8 text-left text-sm transition ${
                       active
                         ? "bg-signal/10 text-signal"
                         : "text-paper/75 hover:bg-white/5 hover:text-paper"
@@ -53,6 +55,14 @@ export default function ChatSidebar({
                       className={`size-1.5 shrink-0 rounded-full ${active ? "bg-signal" : "bg-transparent"}`}
                     />
                     <span className="truncate">{c.title?.trim() || "Untitled chat"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(c.id)}
+                    aria-label="Delete conversation"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-base leading-none text-mist opacity-60 transition hover:text-signal group-hover:opacity-100"
+                  >
+                    &times;
                   </button>
                 </li>
               );

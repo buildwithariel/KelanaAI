@@ -11,6 +11,7 @@ from services.conversation_service import (
     get_owned_conversation,
     list_messages,
     send_message,
+    delete_conversation,
 )
 
 from services.trip_service import (
@@ -248,6 +249,19 @@ def list_conversations_endpoint(current_user: CurrentUser = Depends(get_current_
     db = SessionLocal()
     try:
         return list_conversations(db, current_user.id)
+    finally:
+        db.close()
+
+@app.delete("/api/v1/conversations/{conversation_id}")
+def delete_conversation_endpoint(
+    conversation_id: int, current_user: CurrentUser = Depends(get_current_user)
+):
+    """Delete a conversation and all of its messages."""
+    db = SessionLocal()
+    try:
+        conversation = get_owned_conversation(conversation_id, current_user.id, db)
+        delete_conversation(db, conversation)
+        return {"message": f"Conversation with id {conversation_id} has been deleted"}
     finally:
         db.close()
 

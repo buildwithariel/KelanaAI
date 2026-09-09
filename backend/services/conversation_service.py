@@ -92,6 +92,13 @@ def list_messages(db: Session, conversation_id: int) -> list[Message]:
     )
 
 
+def delete_conversation(db: Session, conversation: Conversation) -> None:
+    """Remove a conversation and every message in it (no FK cascade defined)."""
+    db.query(Message).filter(Message.conversation_id == conversation.id).delete()
+    db.delete(conversation)
+    db.commit()
+
+
 def send_message(db: Session, conversation: Conversation, content: str) -> Message:
     """
     Send-message orchestration: save the user's turn, retrieve grounding

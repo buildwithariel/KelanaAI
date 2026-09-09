@@ -186,6 +186,39 @@ class Conversations(unittest.TestCase):
             client.get("/api/v1/conversations/99999999/messages", headers=h).status_code, 404
         )
 
+    def test_delete_own_conversation(self):
+        _, h = register()
+        cid = client.post("/api/v1/conversations", headers=h, json={}).json()["conversation_id"]
+        self.assertEqual(client.delete(f"/api/v1/conversations/{cid}", headers=h).status_code, 200)
+        self.assertEqual(
+            client.get(f"/api/v1/conversations/{cid}/messages", headers=h).status_code, 404
+        )
+
+    def test_delete_removes_the_messages_too(self):
+        from models.conversation import Message
+
+        _, h = register()
+        cid = client.post("/api/v1/conversations", headers=h, json={}).json()["conversation_id"]
+        db = database.SessionLocal()
+        db.add(Message(conversation_id=cid, role="user", content="hi"))
+        db.add(Message(conversation_id=cid, role="assistant", content="hello"))
+        db.commit()
+        db.close()
+
+        self.assertEqual(client.delete(f"/api/v1/conversations/{cid}", headers=h).status_code, 200)
+
+        db = database.SessionLocal()
+        left = db.query(Message).filter(Message.conversation_id == cid).count()
+        db.close()
+        self.assertEqual(left, 0)
+
+    def test_delete_is_owner_only(self):
+        _, a = register("A")
+        _, b = register("B")
+        cid = client.post("/api/v1/conversations", headers=a, json={}).json()["conversation_id"]
+        self.assertEqual(client.delete(f"/api/v1/conversations/{cid}", headers=b).status_code, 403)
+        self.assertEqual(client.delete("/api/v1/conversations/99999999", headers=a).status_code, 404)
+
 
 class RemovedRoutes(unittest.TestCase):
     def test_old_assistant_routes_are_gone(self):
