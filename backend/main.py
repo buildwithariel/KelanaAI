@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from models.trip import Trip
 from models.user import User
 from database import SessionLocal, init_db
@@ -35,7 +35,8 @@ from services.auth_service import (
 class RegisterRequest(BaseModel):
     name: str
     email: str
-    password: str
+    # 8 = minimum; 72 = bcrypt's hard limit (bcrypt 5 raises above it).
+    password: str = Field(min_length=8, max_length=72)
 
     @field_validator("email")
     @classmethod

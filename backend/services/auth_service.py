@@ -1,3 +1,4 @@
+import logging
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -15,6 +16,14 @@ from models.user import User
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+
+# Fail fast on a misconfigured deploy rather than signing tokens with `None`.
+if not SECRET_KEY:
+    raise RuntimeError("JWT_SECRET_KEY is not set")
+if len(SECRET_KEY) < 32:
+    logging.getLogger(__name__).warning(
+        "JWT_SECRET_KEY is %d chars; use at least 32 for HS256", len(SECRET_KEY)
+    )
 
 # auto_error=False so a missing header raises our own 401, not a bare 403 —
 # 401 (not authenticated) and 403 (authenticated but not allowed) mean

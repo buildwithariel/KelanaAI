@@ -95,6 +95,14 @@ class Auth(unittest.TestCase):
         )
         self.assertEqual(r.status_code, 422)
 
+    def test_password_length_is_enforced(self):
+        for pw in ("short", "x" * 73):
+            r = client.post(
+                "/api/v1/auth/register",
+                json={"name": "X", "email": f"test-{uuid.uuid4().hex[:8]}@example.com", "password": pw},
+            )
+            self.assertEqual(r.status_code, 422, pw)
+
     def test_login_wrong_password(self):
         email, _ = register()
         r = client.post("/api/v1/auth/login", json={"email": email, "password": "nope"})
