@@ -23,7 +23,6 @@ from services.trip_service import (
     get_list_of_transportation
 )
 from services.bedrock_service import get_ai_recommendation
-from services.kb_service import ask_knowledge_base
 from services.auth_service import (
     register_user,
     login_user,
@@ -61,9 +60,6 @@ class TripRequest(BaseModel):
 
 class BudgetUpdateRequest(BaseModel):
     budget: float
-
-class QuestionRequest(BaseModel):
-    question: str
 
 class ConversationCreateRequest(BaseModel):
     title: str | None = None
@@ -229,30 +225,6 @@ def delete_trip(trip_id: int, current_user: CurrentUser = Depends(get_current_us
         return {"message": f"Trip with id {trip_id} has been deleted"}
     finally:
         db.close()
-
-@app.post("/api/v1/assistant")
-@app.post("/api/v1/ask")
-def ask_assistant(
-    request: QuestionRequest,
-    current_user: CurrentUser = Depends(get_current_user),
-):
-    """
-    Session 9 — RAG travel assistant.
-
-    Sends the question to the Amazon Bedrock Knowledge Base, which retrieves
-    relevant passages from the synced travel documents and generates a grounded
-    answer. Returns the answer plus the source document names.
-
-    Registered at two paths (`/assistant` and `/ask`) — the session 9 slides use
-    both names.
-    """
-    result = ask_knowledge_base(request.question)
-    return {
-        "question": request.question,
-        "answer": result["answer"],
-        "sources": result["sources"],
-        "grounded": result["grounded"],
-    }
 
 @app.post("/api/v1/conversations", status_code=201)
 def create_conversation_endpoint(

@@ -114,26 +114,33 @@ def ask_base_model(question: str) -> str:
     return response["output"]["message"]["content"][0]["text"]
 
 
-def ask_conversation(messages: list[dict]) -> str:
+def ask_conversation(messages: list[dict], context: str | None = None) -> str:
     """
-    Session 10 — context-aware chat.
+    Session 10/11 — context-aware chat, optionally grounded.
 
     `messages` is the full conversation history, oldest first, each item
     {"role": "user" | "assistant", "content": str}. Sending the whole thread
     (instead of just the latest turn) is what lets the model answer follow-up
-    questions like "what about Day 2?" correctly — see prompt_builder in the
-    session slides.
+    questions like "what about Day 2?" correctly.
+
+    `context`, when given, is passed as the Converse `system` prompt — session 11
+    uses it to carry the assistant's instructions plus retrieved Knowledge Base
+    passages, so one call has both memory and grounding.
     """
     if not AWS_BEARER_TOKEN_BEDROCK:
         raise ValueError("AWS_BEARER_TOKEN_BEDROCK environment variable is missing")
 
-    client = get_bedrock_client()
-    response = client.converse(
-        modelId=MODEL_ID,
-        messages=[
+    kwargs = {
+        "modelId": MODEL_ID,
+        "messages": [
             {"role": m["role"], "content": [{"text": m["content"]}]} for m in messages
         ],
-    )
+    }
+    if context:
+        kwargs["system"] = [{"text": context}]
+
+    client = get_bedrock_client()
+    response = client.converse(**kwargs)
     return response["output"]["message"]["content"][0]["text"]
 
 

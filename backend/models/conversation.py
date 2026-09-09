@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, JSON
 from sqlalchemy.sql import func
 from database import Base
 
@@ -15,4 +15,5 @@ class Message(Base):
     conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
     role            = Column(String(16), nullable=False)  # "user" | "assistant"
     content         = Column(Text, nullable=False)
+    sources         = Column(JSON, nullable=True)  # list[str] of KB doc names; [] = ungrounded, None = pre-session-11 row
     created_at      = Column(DateTime, server_default=func.now())
