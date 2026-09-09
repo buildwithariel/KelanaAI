@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Nav from "../../components/Nav";
 import RequireAuth from "../RequireAuth";
+import TripProposalCard from "../../components/TripProposalCard";
 import { authFetch } from "../lib/auth";
 import { API_BASE } from "../lib/api";
+import { parseTripProposal } from "../lib/itinerary";
 import type { ConversationMessage } from "../lib/types";
 
 type Phase = "idle" | "asking" | "error";
@@ -122,23 +124,47 @@ export default function ChatPage() {
           </div>
 
           <div className="mt-10 space-y-4">
-            {messages.map((m) => (
-              <article
-                key={m.id}
-                className={`rounded-xl border px-6 py-5 ${
-                  m.role === "user"
-                    ? "ml-auto max-w-[85%] border-signal/30 bg-signal/10"
-                    : "border-line bg-panel/50"
-                }`}
-              >
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-paper/90">
-                  {m.content}
-                </p>
-                <p className="mt-2 font-board text-[10px] tracking-[0.1em] text-mist">
-                  {formatTime(m.created_at)}
-                </p>
-              </article>
-            ))}
+            {messages.map((m) => {
+              const { proposal, cleaned } =
+                m.role === "assistant"
+                  ? parseTripProposal(m.content)
+                  : { proposal: null, cleaned: m.content };
+              return (
+                <article
+                  key={m.id}
+                  className={`rounded-xl border px-6 py-5 ${
+                    m.role === "user"
+                      ? "ml-auto max-w-[85%] border-signal/30 bg-signal/10"
+                      : "border-line bg-panel/50"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-paper/90">
+                    {cleaned}
+                  </p>
+
+                  {proposal && <TripProposalCard proposal={proposal} />}
+
+                  {m.sources && m.sources.length > 0 && (
+                    <div className="mt-4 border-t border-line/60 pt-3">
+                      <p className="font-board text-[10px] font-semibold uppercase tracking-[0.2em] text-mist">
+                        Source{m.sources.length > 1 ? "s" : ""}
+                      </p>
+                      <ul className="mt-1.5 space-y-1">
+                        {m.sources.map((s) => (
+                          <li key={s} className="font-board text-xs tracking-[0.04em] text-paper/70">
+                            ▤ {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <p className="mt-2 font-board text-[10px] tracking-[0.1em] text-mist">
+                    {formatTime(m.created_at)}
+                  </p>
+                </article>
+              );
+            })}
 
             {phase === "asking" && (
               <article className="rounded-xl border border-line bg-panel/50 px-6 py-5">
