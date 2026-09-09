@@ -1,4 +1,4 @@
-"""Tests for kb_service helpers — no network, no Bedrock."""
+"""Tests for kb_service helpers - no network, no Bedrock."""
 
 import unittest
 

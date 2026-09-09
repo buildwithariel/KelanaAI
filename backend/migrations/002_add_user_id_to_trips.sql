@@ -1,4 +1,4 @@
--- Session 8 — link every trip to its owner.
+-- Session 8 - link every trip to its owner.
 -- Adds trips.user_id (FK -> users.id). Mirrors backend/models/trip.py. Safe to re-run.
 
 ALTER TABLE trips

@@ -1,4 +1,4 @@
-# KelanaAI Coherence — Design
+# KelanaAI Coherence - Design
 
 _2026-09-09_
 
@@ -13,7 +13,7 @@ KelanaAI is a set of bootcamp-session features bolted together, not one product:
 - **No bridge from conversation to trip.** The assistant can describe an
   itinerary, but the only way to get a saved `Trip` is to retype everything into
   the `/` form.
-- **`/` is a planning form, not a dashboard.** After login there is no overview —
+- **`/` is a planning form, not a dashboard.** After login there is no overview -
   just a big hero and a form. `/trips` is a flat list.
 - **UI is inconsistent.** Every page re-implements its own loading / empty / error
   states and header markup.
@@ -41,7 +41,7 @@ keep two backends.
 `send_message()` becomes the single path: retrieve KB passages for each user
 turn, pass them to Bedrock via the Converse `system` field alongside the full
 message history, persist the assistant reply with its sources. The trip proposal
-is prompt-driven — the model ends a planning reply with a fenced ```trip block;
+is prompt-driven - the model ends a planning reply with a fenced ```trip block;
 the frontend parses it, hides the raw block, and renders a save-action card that
 reuses the existing `POST /trips` + `POST /trips/{id}/generate` endpoints.
 
@@ -58,21 +58,21 @@ Rejected alternatives:
 
 ### `services/bedrock_service.py`
 
-`ask_conversation(messages, context: str | None = None)` — when `context` is
+`ask_conversation(messages, context: str | None = None)` - when `context` is
 provided, pass it as the Converse `system` parameter:
 `system=[{"text": context}]`. Everything else unchanged. `get_ai_recommendation`,
 `ask_base_model`, `TRAVEL_PLANNER_PROMPT` untouched.
 
 ### `services/conversation_service.py`
 
-New module constant `CONVERSATION_SYSTEM` — the grounding rules plus the trip
+New module constant `CONVERSATION_SYSTEM` - the grounding rules plus the trip
 block contract:
 
 > You are KelanaAI's travel assistant. Use the CONTEXT passages below when they
 > are relevant; if they don't cover the question, answer from general knowledge
-> and say so. When the traveller has given you enough to plan a concrete trip —
+> and say so. When the traveller has given you enough to plan a concrete trip -
 > a destination, a trip length in days, a total budget in USD, and a travel style
-> — end your reply with a fenced block, nothing after it:
+> - end your reply with a fenced block, nothing after it:
 >
 > ```trip
 > {"destination": "<city or country>", "days": <int>, "budget": <number>, "travel_style": "<Solo|Couple|Family|...>"}
@@ -84,7 +84,7 @@ block contract:
 `send_message(db, conversation, content)`:
 
 1. Save the user `Message`.
-2. `passages = safe_retrieve(content)` — wraps `kb_service.retrieve_passages`;
+2. `passages = safe_retrieve(content)` - wraps `kb_service.retrieve_passages`;
    on any exception (missing `KNOWLEDGE_BASE_ID`, KB down) returns `[]` and logs.
    Chat must not fail because retrieval failed.
 3. `context = CONVERSATION_SYSTEM` + rendered passages (or just
@@ -117,7 +117,7 @@ Same "safe to re-run" style as 001 / 002.
 ### Not touched
 
 `scripts/rag_compare.py` imports `ask_base_model` and `ask_knowledge_base` from
-the services directly, not via routes — it keeps working.
+the services directly, not via routes - it keeps working.
 
 ## Frontend changes
 
@@ -131,7 +131,7 @@ the services directly, not via routes — it keeps working.
 | `/assistant` | `redirect("/chat")`. |
 | `/trips`, `/trips/[id]`, `/profile`, `/login`, `/register` | Unchanged behavior; adopt shared components. |
 
-`components/Nav.tsx` — logged-in links become `Home . Assistant . Trips .
+`components/Nav.tsx` - logged-in links become `Home . Assistant . Trips .
 Profile` ("Assistant" -> `/chat`, "Trip history" -> "Trips").
 
 ### Chat -> card flow
@@ -159,7 +159,7 @@ canonical `/generate` output that `parseItinerary` already understands.
   null; cleaned: string }`. Recognizes a single trailing ` ```trip ` fenced
   block, `JSON.parse`s it, validates the four fields and their types; on any
   miss returns `{ proposal: null, cleaned: markdown }`.
-- `lib/api.ts`: `createTripFromProposal(p: TripProposal): Promise<Trip>` — the
+- `lib/api.ts`: `createTripFromProposal(p: TripProposal): Promise<Trip>` - the
   two-step POST currently inline in `app/page.tsx`, extracted so the form and the
   chat card share it.
 
@@ -174,7 +174,7 @@ loading/empty/error treatment. The `frontend-design` skill guides this pass.
 
 ## Data model
 
-`messages.sources` — nullable JSON array of strings (document names). `null` for
+`messages.sources` - nullable JSON array of strings (document names). `null` for
 rows written before this change; `[]` for an ungrounded reply; `["a.pdf",
 "b.md"]` when grounded.
 
@@ -188,13 +188,13 @@ rows written before this change; `[]` for an ungrounded reply; `["a.pdf",
 
 ## Testing
 
-- `frontend/app/lib/itinerary.test.ts` — add `parseTripProposal` cases: valid
+- `frontend/app/lib/itinerary.test.ts` - add `parseTripProposal` cases: valid
   trailing block, no block, malformed JSON, block with a missing/wrong-typed
   field. Run via the existing `npm test` (`node --test`).
-- `backend/services/conversation_service.py` — a `__main__` self-check asserting
+- `backend/services/conversation_service.py` - a `__main__` self-check asserting
   `CONVERSATION_SYSTEM` contains the `` ```trip `` contract markers, mirroring
   the self-check pattern in `bedrock_service.py`. The DB + Bedrock path is not
-  unit-tested (no mock framework in the repo — consistent with existing style).
+  unit-tested (no mock framework in the repo - consistent with existing style).
 
 ## Build order
 

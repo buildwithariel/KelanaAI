@@ -30,7 +30,7 @@ database.engine = sqlalchemy.create_engine(
 )
 database.SessionLocal.configure(bind=database.engine)
 
-import main  # noqa: E402  — runs init_db() against the patched engine
+import main  # noqa: E402  - runs init_db() against the patched engine
 from fastapi.testclient import TestClient  # noqa: E402
 
 client = TestClient(main.app)

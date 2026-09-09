@@ -1,4 +1,4 @@
-"""Tests for conversation_service pure helpers — no DB, no Bedrock, no KB."""
+"""Tests for conversation_service pure helpers - no DB, no Bedrock, no KB."""
 
 import unittest
 

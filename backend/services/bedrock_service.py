@@ -73,7 +73,7 @@ def get_ai_recommendation(
 
     client = get_bedrock_client()
 
-    # Use the Converse API — works across all Nova / Titan / Claude models
+    # Use the Converse API - works across all Nova / Titan / Claude models
     response = client.converse(
         modelId=MODEL_ID,
         messages=[
@@ -116,14 +116,14 @@ def ask_base_model(question: str) -> str:
 
 def ask_conversation(messages: list[dict], context: str | None = None) -> str:
     """
-    Session 10/11 — context-aware chat, optionally grounded.
+    Session 10/11 - context-aware chat, optionally grounded.
 
     `messages` is the full conversation history, oldest first, each item
     {"role": "user" | "assistant", "content": str}. Sending the whole thread
     (instead of just the latest turn) is what lets the model answer follow-up
     questions like "what about Day 2?" correctly.
 
-    `context`, when given, is passed as the Converse `system` prompt — session 11
+    `context`, when given, is passed as the Converse `system` prompt - session 11
     uses it to carry the assistant's instructions plus retrieved Knowledge Base
     passages, so one call has both memory and grounding.
     """

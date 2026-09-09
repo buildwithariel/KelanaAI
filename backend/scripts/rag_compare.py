@@ -1,14 +1,14 @@
 """
-rag_compare.py — Session 9 homework: compare RAG answers vs base-model answers.
+rag_compare.py - Session 9 homework: compare RAG answers vs base-model answers.
 
 Asks the same travel questions two ways:
-  1. ask_base_model()       — the foundation model alone, no documents
-  2. ask_knowledge_base()   — RAG: retrieve from the Bedrock Knowledge Base, then answer
+  1. ask_base_model()       - the foundation model alone, no documents
+  2. ask_knowledge_base()   - RAG: retrieve from the Bedrock Knowledge Base, then answer
 
 Writes the side-by-side comparison to docs/session-9-rag-comparison.md.
 
-Run from the backend/ directory:
-    ./.venv/Scripts/python.exe -m scripts.rag_compare
+Run from the backend/ directory with the venv active:
+    python -m scripts.rag_compare
 """
 
 import datetime
@@ -39,7 +39,7 @@ OUT_PATH = pathlib.Path(__file__).resolve().parents[2] / "docs" / "session-9-rag
 
 def main() -> None:
     lines: list[str] = []
-    lines.append("# Session 9 — RAG vs Base-Model Comparison\n")
+    lines.append("# Session 9 - RAG vs Base-Model Comparison\n")
     lines.append(
         f"_Generated {datetime.date.today().isoformat()} by `backend/scripts/rag_compare.py`._\n"
     )
@@ -54,7 +54,7 @@ def main() -> None:
         print(f"[{i}/{len(QUESTIONS)}] {question}")
         base = ask_base_model(question).strip()
         rag = ask_knowledge_base(question)
-        sources = ", ".join(rag["sources"]) or "—"
+        sources = ", ".join(rag["sources"]) or "-"
 
         lines.append(f"\n## {i}. {question}\n")
         lines.append("### Base model (no documents)\n")
@@ -67,7 +67,7 @@ def main() -> None:
     lines.append("## Observations\n")
     lines.append(
         "- **Specificity.** The base model gives long, generic checklists that could "
-        "apply to any country. RAG answers are shorter and quote the actual document — "
+        "apply to any country. RAG answers are shorter and quote the actual document - "
         "e.g. Indonesia's IMEI rule with the exact USD 500 threshold, 10% import duty and "
         "11% VAT, and the `beacukai.go.id` portal, none of which the base model states.\n"
     )

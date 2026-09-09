@@ -235,7 +235,7 @@ def create_conversation_endpoint(
     request: ConversationCreateRequest,
     current_user: CurrentUser = Depends(get_current_user),
 ):
-    """Session 10 — start a new conversation. Its title fills in from the first message."""
+    """Session 10 - start a new conversation. Its title fills in from the first message."""
     db = SessionLocal()
     try:
         conversation = create_conversation(db, current_user.id, request.title)
@@ -269,7 +269,7 @@ def delete_conversation_endpoint(
 def list_conversation_messages(
     conversation_id: int, current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Reload a conversation's history — used to resume it (PDF Part 7)."""
+    """Reload a conversation's history - used to resume it (PDF Part 7)."""
     db = SessionLocal()
     try:
         get_owned_conversation(conversation_id, current_user.id, db)
@@ -284,7 +284,7 @@ def send_conversation_message(
     current_user: CurrentUser = Depends(get_current_user),
 ):
     """
-    Session 10 — the send-message orchestration: save the user's turn, rebuild
+    Session 10 - the send-message orchestration: save the user's turn, rebuild
     the prompt from the full stored history, call Bedrock, save + return the
     AI's context-aware reply.
     """

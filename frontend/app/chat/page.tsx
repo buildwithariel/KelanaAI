@@ -24,7 +24,7 @@ function CopyButton({ text }: { text: string }) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         } catch {
-          /* clipboard blocked (non-secure context) — selection still works */
+          /* clipboard blocked (non-secure context) - selection still works */
         }
       }}
       className="font-board text-[10px] font-semibold uppercase tracking-[0.14em] text-mist transition hover:text-signal"
@@ -80,7 +80,7 @@ export default function ChatPage() {
   }, [messages.length, phase]);
 
   function startNewChat() {
-    // Only resets the view — past conversations stay in the DB and the sidebar.
+    // Only resets the view - past conversations stay in the DB and the sidebar.
     window.localStorage.removeItem(STORAGE_KEY);
     setConversationId(null);
     setTitle(null);

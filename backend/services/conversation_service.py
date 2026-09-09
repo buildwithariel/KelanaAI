@@ -1,13 +1,13 @@
 """
-conversation_service.py — Session 10/11 conversation memory + grounding.
+conversation_service.py - Session 10/11 conversation memory + grounding.
 
 The application (not the model) owns conversation state: every turn is
 persisted, and each new call to Bedrock is built from the full stored
 history so the model can answer context-aware follow-up questions.
 
 Session 11 adds retrieval: before each Bedrock call we pull the most relevant
-passages from the Knowledge Base and pass them — together with the assistant's
-instructions — as the Converse `system` prompt. One call, both memory and
+passages from the Knowledge Base and pass them - together with the assistant's
+instructions - as the Converse `system` prompt. One call, both memory and
 grounding. The instructions also tell the model to close a concrete plan with a
 ```trip block the frontend turns into a one-click "save as trip".
 """
@@ -31,9 +31,9 @@ CONVERSATION_SYSTEM = (
     "Use the CONTEXT passages below when they are relevant to the question. If "
     "the context does not cover it, answer from general knowledge and say the "
     "answer isn't from KelanaAI's documents.\n\n"
-    "When the traveller has given you enough to plan a concrete trip — a "
+    "When the traveller has given you enough to plan a concrete trip - a "
     "destination, a trip length in days, a total budget in USD, and a travel "
-    "style (Solo, Couple, or Family) — end your reply with a fenced code block "
+    "style (Solo, Couple, or Family) - end your reply with a fenced code block "
     "and nothing after it:\n\n"
     "```trip\n"
     '{"destination": "<city or country>", "days": <int>, "budget": <number>, '

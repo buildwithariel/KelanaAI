@@ -22,7 +22,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KelanaAI — AI trip itineraries",
+  title: "KelanaAI travel planner",
   description:
     "Say where you're going and what you can spend. KelanaAI writes the day-by-day plan: morning, afternoon, and evening.",
 };

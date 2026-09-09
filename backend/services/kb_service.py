@@ -1,9 +1,9 @@
 """
-kb_service.py — Retrieval-Augmented Generation over an Amazon Bedrock Knowledge Base.
+kb_service.py - Retrieval-Augmented Generation over an Amazon Bedrock Knowledge Base.
 
 Session 9: instead of relying only on the model's built-in knowledge, we first
 RETRIEVE the most relevant passages from the travel documents synced to S3, then
-GENERATE an answer grounded in those passages — and return the source file names.
+GENERATE an answer grounded in those passages - and return the source file names.
 
 The Knowledge Base here is a *managed* one, so `retrieve_and_generate` is not
 available; we call `retrieve` and do the generation step ourselves with Bedrock.
@@ -25,7 +25,7 @@ NUM_RESULTS = int(os.getenv("KNOWLEDGE_BASE_NUM_RESULTS", "5"))
 _GROUNDED_PROMPT = (
     "You are KelanaAI's travel assistant. Answer the traveller's question using ONLY the "
     "context passages below, which come from trusted travel documents. If the context does "
-    "not contain the answer, say you don't have that information in your documents — do not "
+    "not contain the answer, say you don't have that information in your documents - do not "
     "guess. Be concise and specific.\n\n"
     "CONTEXT:\n{context}\n\n"
     "QUESTION: {question}\n\n"

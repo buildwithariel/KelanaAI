@@ -1,5 +1,5 @@
 """
-migrate.py — minimal SQL migration runner.
+migrate.py - minimal SQL migration runner.
 
 Tracks applied migrations in a `schema_migrations` table so each file
 is executed exactly once, in filename order.
@@ -7,7 +7,7 @@ is executed exactly once, in filename order.
 Usage:
     python migrate.py
 
-No extra packages required — uses psycopg2 which is already in requirements.txt.
+No extra packages required - uses psycopg2 which is already in requirements.txt.
 """
 
 import os
@@ -68,7 +68,7 @@ def run_migrations():
             version = os.path.basename(filepath)
             print(f"Applying {version} ...", end=" ")
 
-            with open(filepath, "r") as fh:
+            with open(filepath, "r", encoding="utf-8") as fh:
                 sql = fh.read()
 
             with conn.cursor() as cur:

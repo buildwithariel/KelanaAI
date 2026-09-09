@@ -25,7 +25,7 @@ if len(SECRET_KEY) < 32:
         "JWT_SECRET_KEY is %d chars; use at least 32 for HS256", len(SECRET_KEY)
     )
 
-# auto_error=False so a missing header raises our own 401, not a bare 403 —
+# auto_error=False so a missing header raises our own 401, not a bare 403 -
 # 401 (not authenticated) and 403 (authenticated but not allowed) mean
 # different things and callers rely on that distinction.
 security = HTTPBearer(auto_error=False)

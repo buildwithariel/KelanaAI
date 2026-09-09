@@ -102,14 +102,14 @@ export default function Home() {
           </h1>
 
           <p className="mt-6 max-w-lg text-base leading-relaxed text-paper/75 sm:text-lg">
-            Name a place and a budget. You get back a day-by-day plan — morning,
-            afternoon and evening — with real venues, not filler.
+            Name a place and a budget. You get back a day-by-day plan for
+            morning, afternoon and evening, with real venues, not filler.
           </p>
 
           <dl className="mt-10 grid max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
-            <Board label="Destination" value={destination.toUpperCase() || "—"} />
-            <Board label="Days" value={form.days || "—"} />
-            <Board label="Budget" value={form.budget ? `USD ${Number(form.budget).toLocaleString("en-US")}` : "—"} />
+            <Board label="Destination" value={destination.toUpperCase() || "-"} />
+            <Board label="Days" value={form.days || "-"} />
+            <Board label="Budget" value={form.budget ? `USD ${Number(form.budget).toLocaleString("en-US")}` : "-"} />
             <Board label="Style" value={form.travel_style.toUpperCase()} />
           </dl>
         </div>
@@ -237,7 +237,7 @@ export default function Home() {
               Writing your itinerary
             </p>
             <p className="mt-2 font-board text-[12px] uppercase tracking-[0.18em] text-mist">
-              Amazon Bedrock is thinking — about ten seconds
+              Amazon Bedrock is thinking, about ten seconds
             </p>
           </div>
         )}

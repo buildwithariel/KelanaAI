@@ -1,4 +1,4 @@
-"""Pure-function tests for trip_service — no DB, no network."""
+"""Pure-function tests for trip_service - no DB, no network."""
 
 import unittest
 

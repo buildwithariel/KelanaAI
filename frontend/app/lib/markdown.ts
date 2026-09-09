@@ -1,7 +1,7 @@
 // Just enough Markdown to render what amazon.nova-lite-v1:0 actually emits in
 // chat: ATX headings, unordered / ordered lists, horizontal rules, paragraphs.
 // Inline emphasis (**bold**, *italic*, `code`) is handled in the component.
-// No tables, no nested lists, no code fences — the ```trip block is stripped
+// No tables, no nested lists, no code fences - the ```trip block is stripped
 // upstream by parseTripProposal before this ever runs.
 
 export type Block =

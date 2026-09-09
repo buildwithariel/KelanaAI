@@ -1,4 +1,4 @@
-# Session 9 — RAG vs Base-Model Comparison
+# Session 9 - RAG vs Base-Model Comparison
 
 _Generated 2026-09-02 by `backend/scripts/rag_compare.py`._
 
@@ -341,7 +341,7 @@ By adhering to these rules and regulations, you can ensure a smooth entry into I
 
 ## Observations
 
-- **Specificity.** The base model gives long, generic checklists that could apply to any country. RAG answers are shorter and quote the actual document — e.g. Indonesia's IMEI rule with the exact USD 500 threshold, 10% import duty and 11% VAT, and the `beacukai.go.id` portal, none of which the base model states.
+- **Specificity.** The base model gives long, generic checklists that could apply to any country. RAG answers are shorter and quote the actual document - e.g. Indonesia's IMEI rule with the exact USD 500 threshold, 10% import duty and 11% VAT, and the `beacukai.go.id` portal, none of which the base model states.
 
 - **Verifiability.** Every RAG answer names its source file, so the traveller can open the original PDF/Markdown and confirm. The base model cites nothing.
 

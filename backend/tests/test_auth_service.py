@@ -1,4 +1,4 @@
-"""Tests for auth_service password hashing and JWT issuing — no DB."""
+"""Tests for auth_service password hashing and JWT issuing - no DB."""
 
 import os
 import unittest

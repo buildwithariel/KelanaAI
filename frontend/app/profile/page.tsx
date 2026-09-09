@@ -217,7 +217,7 @@ function Breakdown({ title, rows }: { title: string; rows: [string, number][] })
         {title}
       </p>
       {rows.length === 0 ? (
-        <p className="mt-3 text-sm text-mist">—</p>
+        <p className="mt-3 text-sm text-mist">-</p>
       ) : (
         <ul className="mt-4 space-y-3">
           {rows.map(([label, n]) => (

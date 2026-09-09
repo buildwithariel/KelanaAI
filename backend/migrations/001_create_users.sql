@@ -1,4 +1,4 @@
--- Session 8 — create the users table.
+-- Session 8 - create the users table.
 -- Mirrors backend/models/user.py. Safe to re-run.
 
 CREATE TABLE IF NOT EXISTS users (
