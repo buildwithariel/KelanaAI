@@ -88,3 +88,48 @@ test("parseTripProposal rejects a malformed or incomplete block, leaving text in
   const notJson = "Plan:\n```trip\nnot json at all\n```";
   assert.deepEqual(parseTripProposal(notJson), { proposal: null, cleaned: notJson });
 });
+
+test("parseTripProposal only matches a block at the very end of the message", () => {
+  const midText =
+    '```trip\n{"destination": "Bali", "days": 5, "budget": 1500, "travel_style": "Solo"}\n```\n\nAnything after.';
+  assert.deepEqual(parseTripProposal(midText), { proposal: null, cleaned: midText });
+});
+
+test("parseTripProposal rejects non-positive or non-integer days and budget", () => {
+  const cases = [
+    '{"destination": "Bali", "days": 0, "budget": 1500, "travel_style": "Solo"}',
+    '{"destination": "Bali", "days": -3, "budget": 1500, "travel_style": "Solo"}',
+    '{"destination": "Bali", "days": 5.5, "budget": 1500, "travel_style": "Solo"}',
+    '{"destination": "Bali", "days": 5, "budget": 0, "travel_style": "Solo"}',
+    '{"destination": "Bali", "days": 5, "budget": -100, "travel_style": "Solo"}',
+    '{"destination": "  ", "days": 5, "budget": 1500, "travel_style": "Solo"}',
+    '{"destination": "Bali", "days": 5, "budget": 1500, "travel_style": ""}',
+  ];
+  for (const body of cases) {
+    const md = `Plan:\n\`\`\`trip\n${body}\n\`\`\``;
+    assert.equal(parseTripProposal(md).proposal, null, body);
+  }
+});
+
+test("parseTripProposal tolerates extra whitespace and a float-but-integer day", () => {
+  const md =
+    'Plan.\n\n```trip  \n  {"destination": " Bali ", "days": 7.0, "budget": 2000, "travel_style": " Couple "}  \n```  ';
+  assert.deepEqual(parseTripProposal(md).proposal, {
+    destination: "Bali",
+    days: 7,
+    budget: 2000,
+    travel_style: "Couple",
+  });
+});
+
+test("parseItinerary handles CRLF, level-6 headings and asterisk bullets", () => {
+  const md = "###### Day 1: Osaka\r\n### Morning\r\n* Dotonbori.\r\n* Osaka Castle.\r\n";
+  const days = parseItinerary(md);
+  assert.equal(days.length, 1);
+  assert.equal(days[0].title, "Day 1: Osaka");
+  assert.deepEqual(days[0].slots[0].items.map((i) => i.detail), ["Dotonbori.", "Osaka Castle."]);
+});
+
+test("parseItinerary ignores slots and bullets that appear before any day", () => {
+  assert.deepEqual(parseItinerary("### Morning\n- Something\n\n## Not a day heading"), []);
+});

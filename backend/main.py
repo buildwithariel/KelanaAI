@@ -123,6 +123,7 @@ def me(current_user: CurrentUser = Depends(get_current_user)):
     db = SessionLocal()
     try:
         total_trips = db.query(Trip).filter(Trip.user_id == current_user.id).count()
+        created_at = db.query(User.created_at).filter(User.id == current_user.id).scalar()
     finally:
         db.close()
     return {
@@ -130,6 +131,7 @@ def me(current_user: CurrentUser = Depends(get_current_user)):
         "name": current_user.name,
         "email": current_user.email,
         "total_trips": total_trips,
+        "created_at": created_at,
     }
 
 @app.post("/api/v1/trips")

@@ -2,6 +2,8 @@ export type User = {
   id: number;
   name: string | null;
   email: string;
+  total_trips?: number;
+  created_at?: string;
 };
 
 export type AssistantAnswer = {

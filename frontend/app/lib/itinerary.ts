@@ -29,11 +29,19 @@ export function parseTripProposal(markdown: string): {
     const { destination, days, budget, travel_style } = raw;
     if (
       typeof destination !== "string" ||
-      typeof days !== "number" ||
-      typeof budget !== "number" ||
       typeof travel_style !== "string" ||
+      typeof days !== "number" ||
+      typeof budget !== "number"
+    ) {
+      return { proposal: null, cleaned: markdown };
+    }
+    if (
       !destination.trim() ||
-      !travel_style.trim()
+      !travel_style.trim() ||
+      !Number.isInteger(days) ||
+      days <= 0 ||
+      !Number.isFinite(budget) ||
+      budget <= 0
     ) {
       return { proposal: null, cleaned: markdown };
     }

@@ -45,3 +45,41 @@ test("multi-line paragraphs join into one block", () => {
 test("plain text with no markdown is a single paragraph", () => {
   assert.deepEqual(parseBlocks("just a sentence"), [{ type: "p", text: "just a sentence" }]);
 });
+
+test("empty and whitespace-only input yields no blocks", () => {
+  assert.deepEqual(parseBlocks(""), []);
+  assert.deepEqual(parseBlocks("   \n\n  \n"), []);
+});
+
+test("heading levels 1 through 6 are captured with their level", () => {
+  const md = "# a\n## b\n### c\n#### d\n##### e\n###### f";
+  assert.deepEqual(
+    parseBlocks(md).map((b) => b.type === "heading" && b.level),
+    [1, 2, 3, 4, 5, 6],
+  );
+});
+
+test("only --- is a horizontal rule; *** and ___ are paragraphs", () => {
+  assert.deepEqual(parseBlocks("---"), [{ type: "hr" }]);
+  assert.deepEqual(parseBlocks("***"), [{ type: "p", text: "***" }]);
+  assert.deepEqual(parseBlocks("___"), [{ type: "p", text: "___" }]);
+});
+
+test("adjacent lists of different types split into separate blocks", () => {
+  const blocks = parseBlocks("- a\n- b\n1. c\n2. d");
+  assert.deepEqual(blocks, [
+    { type: "ul", items: ["a", "b"] },
+    { type: "ol", items: ["c", "d"] },
+  ]);
+});
+
+test("CRLF line endings are normalised", () => {
+  assert.deepEqual(parseBlocks("## Title\r\n\r\nBody text"), [
+    { type: "heading", level: 2, text: "Title" },
+    { type: "p", text: "Body text" },
+  ]);
+});
+
+test("a hash without a following space is not a heading", () => {
+  assert.deepEqual(parseBlocks("#notaheading"), [{ type: "p", text: "#notaheading" }]);
+});
