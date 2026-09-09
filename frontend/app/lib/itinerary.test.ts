@@ -1,7 +1,7 @@
 // node --test app/lib/itinerary.test.ts
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseItinerary } from "./itinerary.ts";
+import { parseItinerary, parseTripProposal } from "./itinerary.ts";
 
 // Verbatim slice of real amazon.nova-lite-v1:0 output for a 3-day Japan trip.
 const REAL = `# 3-Day Luxury Itinerary in Japan
@@ -58,4 +58,33 @@ test("bullets without a bolded name still render", () => {
 test("unrecognised text yields no days so the UI falls back to raw markdown", () => {
   assert.deepEqual(parseItinerary("Just a paragraph, no headings."), []);
   assert.deepEqual(parseItinerary("## Day 1: Tokyo\n\nNo bullets here."), []);
+});
+
+test("parseTripProposal pulls the trailing trip block and strips it from the text", () => {
+  const md =
+    "Here is your plan for Bali.\n\n" +
+    '```trip\n{"destination": "Bali", "days": 5, "budget": 1500, "travel_style": "Solo"}\n```';
+  const { proposal, cleaned } = parseTripProposal(md);
+  assert.deepEqual(proposal, {
+    destination: "Bali",
+    days: 5,
+    budget: 1500,
+    travel_style: "Solo",
+  });
+  assert.equal(cleaned, "Here is your plan for Bali.");
+});
+
+test("parseTripProposal returns no proposal when there is no block", () => {
+  assert.deepEqual(parseTripProposal("Just chatting, no plan yet."), {
+    proposal: null,
+    cleaned: "Just chatting, no plan yet.",
+  });
+});
+
+test("parseTripProposal rejects a malformed or incomplete block, leaving text intact", () => {
+  const bad = 'Plan:\n```trip\n{"destination": "Bali", "days": "five"}\n```';
+  assert.deepEqual(parseTripProposal(bad), { proposal: null, cleaned: bad });
+
+  const notJson = "Plan:\n```trip\nnot json at all\n```";
+  assert.deepEqual(parseTripProposal(notJson), { proposal: null, cleaned: notJson });
 });

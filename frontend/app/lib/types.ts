@@ -17,6 +17,16 @@ export type ConversationMessage = {
   role: "user" | "assistant";
   content: string;
   created_at: string;
+  sources?: string[] | null;
+};
+
+// The model closes a concrete plan with a ```trip block carrying these four
+// fields; the chat turns it into a one-click "save as trip".
+export type TripProposal = {
+  destination: string;
+  days: number;
+  budget: number;
+  travel_style: string;
 };
 
 export type Trip = {
