@@ -39,32 +39,32 @@ Berjalan sama di Windows, macOS, dan Linux.
   (jumlah trip, total anggaran, total hari, jumlah destinasi), rincian per
   kategori dan gaya perjalanan.
 
-## Struktur proyek
+## Quickstart
 
-```text
-KelanaAI/
-  backend/
-    main.py                     # semua route FastAPI
-    database.py                  # engine + SessionLocal + init_db
-    migrate.py                   # jalankan migrations/*.sql sekali, urut
-    migrations/                  # 001 users, 002 trips.user_id, 003 messages.sources
-    models/                      # ORM: user, trip, conversation + message
-    services/
-      auth_service.py            # hash password, JWT, cek kepemilikan
-      trip_service.py            # kategori, musim, budget harian, rekomendasi
-      bedrock_service.py         # prompt + panggilan Bedrock Converse
-      kb_service.py              # retrieval Knowledge Base (RAG)
-      conversation_service.py    # orkestrasi memori + grounding
-    tests/                       # unittest: pure functions + API (SQLite terisolasi)
-  frontend/
-    app/
-      page.tsx                   # dashboard
-      plan/page.tsx              # form perencanaan
-      chat/page.tsx              # asisten + sidebar percakapan
-      trips/, profile/, login/, register/
-      lib/                       # api base, auth fetch, tipe, parser itinerary + markdown
-    components/                  # Nav, ChatSidebar, Markdown, TripProposalCard, ...
+Butuh PostgreSQL berjalan dengan database kosong `kelana_db`, Python 3.11+, dan
+Node.js 22.
+
+```bash
+# Backend
+cd backend
+python -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+cp .env.example .env                  # Windows: copy .env.example .env
+# lalu isi .env: DATABASE_URL, JWT_SECRET_KEY (>= 32 karakter),
+# AWS_BEARER_TOKEN_BEDROCK, AWS_REGION, MODEL_ID, KNOWLEDGE_BASE_ID
+python migrate.py
+uvicorn main:app --reload
 ```
+
+```bash
+# Frontend (terminal lain)
+cd frontend
+npm install
+npm run dev
+```
+
+Buka `http://localhost:3000`.
 
 ## Prasyarat
 
@@ -102,25 +102,17 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Buat `backend/.env`:
+Salin `.env.example` lalu isi nilainya:
 
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/kelana_db
-
-# minimal 32 karakter; server menolak start kalau kosong
-JWT_SECRET_KEY=ganti-dengan-string-acak-panjang-minimal-32-char
-
-AWS_REGION=ap-southeast-2
-MODEL_ID=amazon.nova-lite-v1:0
-
-# salah satu: bearer token Bedrock ATAU pasangan access key biasa
-AWS_BEARER_TOKEN_BEDROCK=...
-# AWS_ACCESS_KEY_ID=...
-# AWS_SECRET_ACCESS_KEY=...
-
-# untuk chat yang ter-ground; tanpa ini chat tetap jalan tapi tidak mengutip dokumen
-KNOWLEDGE_BASE_ID=...
+```bash
+cp .env.example .env      # Windows: copy .env.example .env
 ```
+
+Yang wajib: `DATABASE_URL`, `JWT_SECRET_KEY` (minimal 32 karakter, server menolak
+start kalau kosong), kredensial Bedrock (`AWS_BEARER_TOKEN_BEDROCK` atau
+`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`), `AWS_REGION`, `MODEL_ID`.
+`KNOWLEDGE_BASE_ID` opsional: tanpa itu chat tetap jalan tapi tidak mengutip
+dokumen.
 
 Jalankan migrasi lalu server:
 
