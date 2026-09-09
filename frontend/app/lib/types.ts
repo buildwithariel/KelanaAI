@@ -22,6 +22,12 @@ export type ConversationMessage = {
   sources?: string[] | null;
 };
 
+export type ConversationSummary = {
+  id: number;
+  title: string | null;
+  created_at: string;
+};
+
 // The model closes a concrete plan with a ```trip block carrying these four
 // fields; the chat turns it into a one-click "save as trip".
 export type TripProposal = {
