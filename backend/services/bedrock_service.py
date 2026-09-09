@@ -130,17 +130,14 @@ def ask_conversation(messages: list[dict], context: str | None = None) -> str:
     if not AWS_BEARER_TOKEN_BEDROCK:
         raise ValueError("AWS_BEARER_TOKEN_BEDROCK environment variable is missing")
 
-    kwargs = {
-        "modelId": MODEL_ID,
-        "messages": [
+    client = get_bedrock_client()
+    response = client.converse(
+        modelId=MODEL_ID,
+        messages=[
             {"role": m["role"], "content": [{"text": m["content"]}]} for m in messages
         ],
-    }
-    if context:
-        kwargs["system"] = [{"text": context}]
-
-    client = get_bedrock_client()
-    response = client.converse(**kwargs)
+        system=[{"text": context}] if context else [],
+    )
     return response["output"]["message"]["content"][0]["text"]
 
 

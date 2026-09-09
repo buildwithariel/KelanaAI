@@ -7,12 +7,12 @@ import Field, { control } from "../components/Field";
 import ItineraryDays from "../components/ItineraryDays";
 import Nav from "../components/Nav";
 import RequireAuth from "./RequireAuth";
-import { authFetch } from "./lib/auth";
 import { API_BASE } from "./lib/api";
+import { createTrip } from "./lib/trips";
 import { parseItinerary } from "./lib/itinerary";
 import type { Trip } from "./lib/types";
 
-type Phase = "idle" | "saving" | "writing" | "done" | "error";
+type Phase = "idle" | "writing" | "done" | "error";
 
 // Same destination keys the backend recommends places for, so the photo at the
 // top always matches the trip the API is about to plan.
@@ -48,24 +48,23 @@ export default function Home() {
 
   const destination = form.destination.trim();
   const hero = HEROES[destination.toLowerCase()] ?? HEROES[""];
-  const busy = phase === "saving" || phase === "writing";
+  const busy = phase === "writing";
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setTrip(null);
-    setPhase("saving");
+    setPhase("writing");
     try {
-      const created: Trip = await post("/api/v1/trips", {
-        destination,
-        days: Number(form.days),
-        budget: Number(form.budget),
-        currency: "USD",
-        travel_month: form.travel_month,
-        travel_style: form.travel_style,
-      });
-      setPhase("writing");
-      setTrip(await post(`/api/v1/trips/${created.id}/generate`));
+      setTrip(
+        await createTrip({
+          destination,
+          days: Number(form.days),
+          budget: Number(form.budget),
+          travel_month: form.travel_month,
+          travel_style: form.travel_style,
+        }),
+      );
       setPhase("done");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -235,12 +234,10 @@ export default function Home() {
         {busy && (
           <div className="rounded-xl border border-line bg-panel/50 px-6 py-10 text-center">
             <p className="font-display text-xl font-semibold">
-              {phase === "saving" ? "Saving your trip" : "Writing your itinerary"}
+              Writing your itinerary
             </p>
             <p className="mt-2 font-board text-[12px] uppercase tracking-[0.18em] text-mist">
-              {phase === "saving"
-                ? "Filing it with the API"
-                : "Amazon Bedrock is thinking — about ten seconds"}
+              Amazon Bedrock is thinking — about ten seconds
             </p>
           </div>
         )}
@@ -284,13 +281,4 @@ export default function Home() {
     </main>
     </RequireAuth>
   );
-}
-
-async function post(path: string, body?: unknown) {
-  const response = await authFetch(path, {
-    method: "POST",
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!response.ok) throw new Error(`POST ${path} returned ${response.status}`);
-  return response.json();
 }

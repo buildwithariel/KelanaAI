@@ -1,11 +1,6 @@
 import { authFetch } from "./auth";
 import type { Trip, TripProposal } from "./types";
 
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-
 export type NewTrip = {
   destination: string;
   days: number;
@@ -35,7 +30,7 @@ export function createTripFromProposal(p: TripProposal): Promise<Trip> {
     destination: p.destination,
     days: p.days,
     budget: p.budget,
-    travel_month: MONTHS[new Date().getMonth()],
+    travel_month: new Date().toLocaleDateString("en-US", { month: "long" }),
     travel_style: p.travel_style,
   });
 }

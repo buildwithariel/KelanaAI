@@ -53,22 +53,8 @@ def _safe_retrieve(question: str) -> list[dict]:
         return []
 
 
-def _build_context(passages: list[dict]) -> str:
-    if not passages:
-        return CONVERSATION_SYSTEM
-    blocks = "\n\n---\n\n".join(
-        f"[{p['source']}]\n{p['text']}" for p in passages if p.get("text")
-    )
-    return f"{CONVERSATION_SYSTEM}\n\nCONTEXT:\n{blocks}"
-
-
 def _distinct_sources(passages: list[dict]) -> list[str]:
-    seen: list[str] = []
-    for p in passages:
-        s = p.get("source")
-        if s and s not in seen:
-            seen.append(s)
-    return seen
+    return list(dict.fromkeys(p["source"] for p in passages if p.get("source")))
 
 
 def create_conversation(db: Session, user_id: int, title: str | None = None) -> Conversation:
@@ -119,10 +105,17 @@ def send_message(db: Session, conversation: Conversation, content: str) -> Messa
     db.commit()
 
     passages = _safe_retrieve(content)
+    context = CONVERSATION_SYSTEM
+    if passages:
+        blocks = "\n\n---\n\n".join(
+            f"[{p['source']}]\n{p['text']}" for p in passages if p.get("text")
+        )
+        context = f"{CONVERSATION_SYSTEM}\n\nCONTEXT:\n{blocks}"
+
     history = list_messages(db, conversation.id)
     answer = ask_conversation(
         [{"role": m.role, "content": m.content} for m in history],
-        context=_build_context(passages),
+        context=context,
     )
 
     ai_message = Message(
@@ -140,7 +133,5 @@ def send_message(db: Session, conversation: Conversation, content: str) -> Messa
 if __name__ == "__main__":
     for marker in ("```trip", "destination", "days", "budget", "travel_style", "CONTEXT"):
         assert marker in CONVERSATION_SYSTEM, f"system prompt missing: {marker}"
-    assert _build_context([]) == CONVERSATION_SYSTEM
-    assert "CONTEXT:" in _build_context([{"text": "hi", "source": "a.md"}])
     assert _distinct_sources([{"source": "a"}, {"source": "a"}, {"source": "b"}]) == ["a", "b"]
     print("conversation_service self-check passed")

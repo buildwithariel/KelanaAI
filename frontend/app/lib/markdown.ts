@@ -12,7 +12,7 @@ export type Block =
   | { type: "p"; text: string };
 
 const HEADING = /^(#{1,6})\s+(.*)$/;
-const HR = /^\s*(-{3,}|\*{3,}|_{3,})\s*$/;
+const HR = /^\s*-{3,}\s*$/;
 const UL = /^\s*[-*]\s+/;
 const OL = /^\s*\d+\.\s+/;
 
@@ -24,6 +24,15 @@ export function parseBlocks(markdown: string): Block[] {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const blocks: Block[] = [];
   let i = 0;
+
+  const collectList = (re: RegExp): string[] => {
+    const items: string[] = [];
+    while (i < lines.length && re.test(lines[i])) {
+      items.push(lines[i].replace(re, "").trim());
+      i++;
+    }
+    return items;
+  };
 
   while (i < lines.length) {
     const line = lines[i];
@@ -47,22 +56,12 @@ export function parseBlocks(markdown: string): Block[] {
     }
 
     if (UL.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && UL.test(lines[i])) {
-        items.push(lines[i].replace(UL, "").trim());
-        i++;
-      }
-      blocks.push({ type: "ul", items });
+      blocks.push({ type: "ul", items: collectList(UL) });
       continue;
     }
 
     if (OL.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && OL.test(lines[i])) {
-        items.push(lines[i].replace(OL, "").trim());
-        i++;
-      }
-      blocks.push({ type: "ol", items });
+      blocks.push({ type: "ol", items: collectList(OL) });
       continue;
     }
 
