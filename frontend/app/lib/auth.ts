@@ -2,19 +2,20 @@ import { API_BASE } from "./api";
 
 const TOKEN_KEY = "kelana_token";
 
+// sessionStorage, not localStorage: the session ends when the tab closes.
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+  return window.sessionStorage.getItem(TOKEN_KEY);
 }
 
 export function setToken(token: string) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(TOKEN_KEY, token);
+  window.sessionStorage.setItem(TOKEN_KEY, token);
 }
 
 export function clearToken() {
   if (typeof window === "undefined") return;
-  window.localStorage.removeItem(TOKEN_KEY);
+  window.sessionStorage.removeItem(TOKEN_KEY);
 }
 
 /** Drop-in fetch replacement that attaches the bearer token and API base. */

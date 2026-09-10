@@ -16,6 +16,9 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const IDLE_LIMIT_MS = 15 * 60 * 1000;
+const ACTIVITY_EVENTS = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
@@ -68,6 +71,22 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     clearToken();
     setUser(null);
   }
+
+  // Log out after IDLE_LIMIT_MS with no user activity.
+  useEffect(() => {
+    if (!user) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(logout, IDLE_LIMIT_MS);
+    };
+    reset();
+    ACTIVITY_EVENTS.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    return () => {
+      clearTimeout(timer);
+      ACTIVITY_EVENTS.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [user]);
 
   return (
     <AuthContext.Provider value={{ user, status, login, register, logout }}>

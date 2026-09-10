@@ -30,7 +30,10 @@ class AccessToken(unittest.TestCase):
         token = svc.create_access_token(42)
         payload = jwt.decode(token, svc.SECRET_KEY, algorithms=[svc.ALGORITHM])
         self.assertEqual(payload["sub"], "42")
-        self.assertGreater(payload["exp"], datetime.now(timezone.utc).timestamp())
+        expected = datetime.now(timezone.utc) + timedelta(
+            minutes=svc.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+        self.assertAlmostEqual(payload["exp"], expected.timestamp(), delta=60)
 
     def test_wrong_secret_is_rejected(self):
         token = svc.create_access_token(1)

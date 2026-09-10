@@ -15,7 +15,7 @@ from models.user import User
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "15"))
 
 # Fail fast on a misconfigured deploy rather than signing tokens with `None`.
 if not SECRET_KEY:
