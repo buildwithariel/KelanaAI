@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Archivo, Geist, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "./AuthProvider";
+import Logo from "../components/Logo";
 
 const archivo = Archivo({
   variable: "--font-archivo",
@@ -21,10 +22,27 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "600"],
 });
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://kelana-ai-ashy.vercel.app";
+const DESCRIPTION =
+  "Say where you're going and what you can spend. KelanaAI writes the day-by-day plan: morning, afternoon, and evening.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "KelanaAI travel planner",
-  description:
-    "Say where you're going and what you can spend. KelanaAI writes the day-by-day plan: morning, afternoon, and evening.",
+  description: DESCRIPTION,
+  openGraph: {
+    title: "KelanaAI travel planner",
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "KelanaAI",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KelanaAI travel planner",
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -39,8 +57,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="mt-auto border-t border-line bg-deep">
           <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-12 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-xs">
-              <p className="font-display text-xl font-extrabold tracking-tight text-paper">
-                Kelana<span className="text-signal">AI</span>
+              <p className="flex items-center gap-2 font-display text-xl font-extrabold tracking-tight text-paper">
+                <Logo className="h-7 w-7 shrink-0" />
+                <span>
+                  Kelana<span className="text-signal">AI</span>
+                </span>
               </p>
               <p className="mt-3 text-sm leading-relaxed text-mist">
                 Itineraries written by Amazon Bedrock, priced against the budget

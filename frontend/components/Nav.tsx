@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../app/AuthProvider";
+import Logo from "./Logo";
 
 const LOGGED_IN_LINKS = [
   { href: "/", label: "Home" },
@@ -27,8 +28,14 @@ export default function Nav() {
   return (
     <div className="fixed inset-x-0 top-4 z-20 mx-auto w-full max-w-6xl px-4 sm:top-6 sm:px-6">
       <nav className="flex items-center justify-between gap-4 rounded-full border border-line bg-panel/90 px-4 py-3 shadow-lg shadow-black/30 backdrop-blur sm:px-6">
-        <Link href="/" className="font-display text-base font-extrabold tracking-tight text-paper">
-          Kelana<span className="text-signal">AI</span>
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-display text-base font-extrabold tracking-tight text-paper"
+        >
+          <Logo className="h-6 w-6 shrink-0" />
+          <span>
+            Kelana<span className="text-signal">AI</span>
+          </span>
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
