@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Archivo, Geist, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "./AuthProvider";
-import { API_BASE } from "./lib/api";
 
 const archivo = Archivo({
   variable: "--font-archivo",
@@ -54,28 +54,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </p>
               <ul className="mt-4 space-y-2.5 text-sm">
                 <li>
-                  <a
+                  <Link
                     className="text-paper/80 transition hover:text-signal focus-visible:text-signal focus-visible:outline-none"
-                    href="#plan"
+                    href="/#plan"
                   >
                     Plan a trip
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="text-paper/80 transition hover:text-signal focus-visible:text-signal focus-visible:outline-none"
-                    href={`${API_BASE}/docs`}
-                  >
-                    API reference
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="text-paper/80 transition hover:text-signal focus-visible:text-signal focus-visible:outline-none"
-                    href={`${API_BASE}/health`}
-                  >
-                    Service health
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </nav>

@@ -23,8 +23,11 @@ Berjalan sama di Windows, macOS, dan Linux.
 
 ## Fitur
 
-* **Auth**: register / login, JWT bearer token (berlaku 7 hari), setiap data trip
-  dan percakapan di-*scope* ke pemiliknya.
+* **Auth**: register / login, JWT bearer token (umur `JWT_EXPIRE_MINUTES`, default
+  15 menit), sesi di `sessionStorage` (hilang saat tab ditutup) dan otomatis
+  logout setelah 15 menit tanpa aktivitas. `register` / `login` di-rate-limit
+  per IP (5 dan 10 per menit). Setiap data trip dan percakapan di-*scope* ke
+  pemiliknya.
 * **Asisten** (`/chat`): satu percakapan chat dengan memori (seluruh riwayat
   dikirim tiap giliran) plus grounding ke Knowledge Base. Jawaban dirender
   sebagai markdown, ada tombol salin, dan menampilkan dokumen sumber.
@@ -121,7 +124,8 @@ python migrate.py
 uvicorn main:app --reload
 ```
 
-API di `http://localhost:8000`, Swagger UI di `http://localhost:8000/docs`.
+API di `http://localhost:8000`. Swagger UI di `/docs` hanya aktif kalau
+`ENV=development` (sudah diset di `.env.example`); di deployment sengaja dimatikan.
 
 ### 2. Frontend
 
@@ -198,6 +202,9 @@ DB dulu, lalu backend, lalu frontend, terakhir sambungkan CORS.
    | `AWS_BEARER_TOKEN_BEDROCK` | token Bedrock (atau pakai `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`) |
    | `KNOWLEDGE_BASE_ID` | id Knowledge Base (kalau mau chat ter-ground) |
    | `CORS_ORIGINS` | isi setelah frontend jadi (langkah 4) |
+   | `JWT_EXPIRE_MINUTES` | opsional, default 15 |
+
+   Jangan set `ENV` di sini: dikosongkan supaya `/docs` tetap tertutup di publik.
 
 4. Deploy ulang tiap ada perubahan cukup `fastapi deploy` lagi dari `backend/`.
 
@@ -243,8 +250,8 @@ Semua route `/api/v1/...` selain auth butuh header `Authorization: Bearer <token
 | Method | Endpoint | Fungsi |
 |---|---|---|
 | `GET` | `/health` | Health check |
-| `POST` | `/api/v1/auth/register` | Buat akun (password 8 sampai 72 karakter) |
-| `POST` | `/api/v1/auth/login` | Tukar email + password dengan bearer token |
+| `POST` | `/api/v1/auth/register` | Buat akun (password 8 sampai 72 karakter; maks 5 per menit per IP) |
+| `POST` | `/api/v1/auth/login` | Tukar email + password dengan bearer token (maks 10 per menit per IP) |
 | `GET` | `/api/v1/auth/me` | Profil ringkas: id, nama, email, jumlah trip, tanggal daftar |
 | `POST` | `/api/v1/trips` | Buat trip baru (kategori, musim, budget harian dihitung) |
 | `GET` | `/api/v1/trips` | Semua trip milik user |

@@ -33,6 +33,10 @@ database.SessionLocal.configure(bind=database.engine)
 import main  # noqa: E402  - runs init_db() against the patched engine
 from fastapi.testclient import TestClient  # noqa: E402
 
+# The suite registers dozens of accounts per run from one client; the rate
+# limiter is exercised on its own in test_register_is_rate_limited.
+main.limiter.enabled = False
+
 client = TestClient(main.app)
 
 
@@ -114,6 +118,25 @@ class Auth(unittest.TestCase):
             json={"email": "nobody@example.com", "password": "x"},
         )
         self.assertEqual(r.status_code, 401)
+
+    def test_register_is_rate_limited(self):
+        main.limiter.enabled = True
+        try:
+            codes = [
+                client.post(
+                    "/api/v1/auth/register",
+                    json={
+                        "name": "X",
+                        "email": f"rl-{uuid.uuid4().hex[:8]}@example.com",
+                        "password": "password123",
+                    },
+                ).status_code
+                for _ in range(7)
+            ]
+        finally:
+            main.limiter.enabled = False
+            main.limiter.reset()
+        self.assertIn(429, codes)
 
     def test_me_requires_a_valid_token(self):
         self.assertEqual(client.get("/api/v1/auth/me").status_code, 401)

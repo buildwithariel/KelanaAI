@@ -1,7 +1,10 @@
 import os
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from pydantic import BaseModel, Field, field_validator
 from models.trip import Trip
 from models.user import User
@@ -71,7 +74,30 @@ class ConversationCreateRequest(BaseModel):
 class MessageRequest(BaseModel):
     content: str
 
-app = FastAPI()
+def _client_ip(request: Request) -> str:
+    # Behind Cloudflare / FastAPI Cloud, request.client.host is the proxy. Both
+    # of these headers are set by the edge and not forwarded from the client.
+    return (
+        request.headers.get("cf-connecting-ip")
+        or request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+        or get_remote_address(request)
+    )
+
+
+# ponytail: in-memory store, so the limit is per-replica (currently ~2x the
+# stated number). Move to storage_uri="redis://..." if that matters.
+limiter = Limiter(key_func=_client_ip)
+
+# Swagger/OpenAPI is on only in local dev (ENV=development). Anywhere else - any
+# deploy - it's off so the public API exposes no endpoint catalog.
+_docs = "/docs" if os.getenv("ENV") == "development" else None
+app = FastAPI(
+    docs_url=_docs,
+    redoc_url=None,
+    openapi_url="/openapi.json" if _docs else None,
+)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # The Next.js frontend runs on its own origin, so the browser needs permission
 # to call this API from there. In production set CORS_ORIGINS to the deployed
@@ -103,10 +129,11 @@ def health_check():
     }
 
 @app.post("/api/v1/auth/register", status_code=201)
-def register(request: RegisterRequest):
+@limiter.limit("5/minute")
+def register(request: Request, payload: RegisterRequest):
     db = SessionLocal()
     try:
-        user = register_user(db, request.name, request.email, request.password)
+        user = register_user(db, payload.name, payload.email, payload.password)
         return {
             "id": user.id,
             "name": user.name,
@@ -119,10 +146,11 @@ def register(request: RegisterRequest):
         db.close()
 
 @app.post("/api/v1/auth/login")
-def login(request: LoginRequest):
+@limiter.limit("10/minute")
+def login(request: Request, payload: LoginRequest):
     db = SessionLocal()
     try:
-        return login_user(db, request.email, request.password)
+        return login_user(db, payload.email, payload.password)
     except ValueError as exc:
         raise HTTPException(status_code=401, detail=str(exc))
     finally:
